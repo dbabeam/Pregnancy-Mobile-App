@@ -1,0 +1,68 @@
+{
+  "type": "MaxHistoryTrackerFeaturizer",
+  "state_featurizer": {
+    "action_texts": [],
+    "entity_tag_specs": [],
+    "feature_states": {
+      "intent": {
+        "back": 0,
+        "birth_preparation": 1,
+        "emotional_support": 2,
+        "exercise_safety": 3,
+        "fetal_development": 4,
+        "goodbye": 5,
+        "greet": 6,
+        "labor_signs": 7,
+        "medical_complications": 8,
+        "medication_safety": 9,
+        "nlu_fallback": 10,
+        "nutrition_advice": 11,
+        "out_of_scope": 12,
+        "pregnancy_symptoms": 13,
+        "prenatal_care": 14,
+        "restart": 15,
+        "session_start": 16
+      },
+      "action_name": {
+        "action_listen": 0,
+        "action_restart": 1,
+        "action_session_start": 2,
+        "action_default_fallback": 3,
+        "action_deactivate_loop": 4,
+        "action_revert_fallback_events": 5,
+        "action_default_ask_affirmation": 6,
+        "action_default_ask_rephrase": 7,
+        "action_two_stage_fallback": 8,
+        "action_unlikely_intent": 9,
+        "action_back": 10,
+        "...": 11,
+        "action_extract_slots": 12,
+        "utter_birth_preparation": 13,
+        "utter_emotional_support": 14,
+        "utter_exercise_safety": 15,
+        "utter_fetal_development": 16,
+        "utter_goodbye": 17,
+        "utter_greet": 18,
+        "utter_labor_signs": 19,
+        "utter_medical_complications": 20,
+        "utter_medication_safety": 21,
+        "utter_nutrition_advice": 22,
+        "utter_pregnancy_symptoms": 23,
+        "utter_prenatal_care": 24
+      },
+      "entities": {
+        "condition": 0,
+        "exercise_type": 1,
+        "food_type": 2,
+        "symptom": 3,
+        "trimester": 4
+      },
+      "slots": {
+        "trimester_0": 0
+      },
+      "active_loop": {}
+    }
+  },
+  "remove_duplicates": true,
+  "max_history": 5
+}

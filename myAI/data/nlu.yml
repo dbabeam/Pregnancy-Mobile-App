@@ -1,0 +1,55 @@
+version: "3.1"
+
+nlu:
+
+- intent: greet
+  examples: |
+    - hi
+    - hello
+    - hey
+    - good morning
+    - good evening
+    - what's up
+    - yo
+
+- intent: goodbye
+  examples: |
+    - bye
+    - goodbye
+    - see you later
+    - talk to you soon
+    - catch you later
+    - bye bye
+
+- intent: ask_pregnancy
+  examples: |
+    - how do I know I'm pregnant?
+    - am I pregnant?
+    - what are the signs of pregnancy?
+    - I think I'm pregnant
+    - how can I tell if I'm pregnant?
+    - pregnancy symptoms
+
+- intent: ask_diet
+  examples: |
+    - what should I eat during pregnancy?
+    - pregnancy diet
+    - healthy food for pregnancy
+    - diet tips for pregnant women
+    - what nutrients do I need in pregnancy?
+
+- intent: ask_symptoms
+  examples: |
+    - I'm feeling nauseous, is that normal?
+    - what are common pregnancy symptoms?
+    - is back pain normal during pregnancy?
+    - should I worry about cramps?
+    - what symptoms are expected in early pregnancy?
+
+- intent: fallback
+  examples: |
+    - what the fuck
+    - I don't get this
+    - this is nonsense
+    - nonsense
+    - you make no sense

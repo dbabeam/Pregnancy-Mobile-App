@@ -1,0 +1,36 @@
+[
+  {
+    "tag_name": "entity",
+    "ids_to_tags": {
+      "1": "B-first",
+      "2": "I-first",
+      "3": "L-first",
+      "4": "U-first",
+      "5": "B-second",
+      "6": "I-second",
+      "7": "L-second",
+      "8": "U-second",
+      "9": "B-third",
+      "10": "I-third",
+      "11": "L-third",
+      "12": "U-third",
+      "0": "O"
+    },
+    "tags_to_ids": {
+      "B-first": 1,
+      "I-first": 2,
+      "L-first": 3,
+      "U-first": 4,
+      "B-second": 5,
+      "I-second": 6,
+      "L-second": 7,
+      "U-second": 8,
+      "B-third": 9,
+      "I-third": 10,
+      "L-third": 11,
+      "U-third": 12,
+      "O": 0
+    },
+    "num_tags": 13
+  }
+]

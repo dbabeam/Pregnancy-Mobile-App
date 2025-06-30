@@ -1,0 +1,33 @@
+version: "3.1"
+
+rules:
+
+- rule: Greet the user
+  steps:
+    - intent: greet
+    - action: utter_greet
+
+- rule: Say goodbye
+  steps:
+    - intent: goodbye
+    - action: utter_goodbye
+
+- rule: Handle pregnancy question
+  steps:
+    - intent: ask_pregnancy
+    - action: utter_ask_pregnancy
+
+- rule: Provide diet info
+  steps:
+    - intent: ask_diet
+    - action: utter_ask_diet
+
+- rule: Respond to symptom inquiry
+  steps:
+    - intent: ask_symptoms
+    - action: utter_ask_symptoms
+
+- rule: Default fallback rule
+  steps:
+    - intent: fallback
+    - action: utter_fallback

@@ -1,0 +1,32 @@
+version: "3.1"
+
+stories:
+  - story: greeting path
+    steps:
+      - intent: greet
+      - action: utter_greet
+
+  - story: goodbye path
+    steps:
+      - intent: goodbye
+      - action: utter_goodbye
+
+  - story: ask about pregnancy
+    steps:
+      - intent: ask_pregnancy
+      - action: utter_ask_pregnancy
+
+  - story: ask about diet
+    steps:
+      - intent: ask_diet
+      - action: utter_ask_diet
+
+  - story: ask about symptoms
+    steps:
+      - intent: ask_symptoms
+      - action: utter_ask_symptoms
+
+  - story: fallback response
+    steps:
+      - intent: fallback
+      - action: utter_fallback

@@ -1,0 +1,8 @@
+{
+  "0": "ask_diet",
+  "1": "ask_pregnancy",
+  "2": "ask_symptoms",
+  "3": "fallback",
+  "4": "goodbye",
+  "5": "greet"
+}

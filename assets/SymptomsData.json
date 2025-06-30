@@ -1,0 +1,78 @@
+[
+    {
+      "id": 1,
+      "symptom": "Nausea",
+      "advice": "Eat small, frequent meals and avoid spicy or greasy foods."
+    },
+    {
+      "id": 2,
+      "symptom": "Vomiting",
+      "advice": "Stay hydrated with clear fluids and get plenty of rest. Seek help if persistent."
+    },
+    {
+      "id": 3,
+      "symptom": "Headache",
+      "advice": "Lie down in a quiet, dark room and drink water. Call a doctor if it's severe or persistent."
+    },
+    {
+      "id": 4,
+      "symptom": "Abdominal pain",
+      "advice": "Mild pain may be normal, but if it's sharp or consistent, contact your healthcare provider."
+    },
+    {
+      "id": 5,
+      "symptom": "Vaginal bleeding",
+      "advice": "This may be serious—seek immediate medical attention."
+    },
+    {
+      "id": 6,
+      "symptom": "Fatigue",
+      "advice": "Get plenty of rest, eat iron-rich foods, and stay hydrated."
+    },
+    {
+      "id": 7,
+      "symptom": "Dizziness",
+      "advice": "Sit or lie down immediately. Eat regularly and avoid sudden position changes."
+    },
+    {
+      "id": 8,
+      "symptom": "Shortness of breath",
+      "advice": "Take breaks often and sleep propped up. Seek help if breathing becomes difficult."
+    },
+    {
+      "id": 9,
+      "symptom": "Swollen feet or ankles",
+      "advice": "Elevate your feet when sitting and avoid standing for long periods. Call a doctor if swelling is sudden or severe."
+    },
+    {
+      "id": 10,
+      "symptom": "High blood pressure",
+      "advice": "Monitor closely and inform your doctor immediately. May indicate preeclampsia."
+    },
+    {
+      "id": 11,
+      "symptom": "Blurred vision",
+      "advice": "May be a sign of high blood pressure or preeclampsia—seek immediate medical care."
+    },
+    {
+      "id": 12,
+      "symptom": "Back pain",
+      "advice": "Use a warm compress, maintain good posture, and avoid heavy lifting."
+    },
+    {
+      "id": 13,
+      "symptom": "Contractions",
+      "advice": "If regular and increasing in intensity, call your doctor—it may be labor."
+    },
+    {
+      "id": 14,
+      "symptom": "Fever",
+      "advice": "Stay hydrated, rest, and take doctor-approved medication. Call your provider if it persists."
+    },
+    {
+      "id": 15,
+      "symptom": "Loss of appetite",
+      "advice": "Try light, nutritious snacks throughout the day and stay hydrated. Discuss with your doctor if it continues."
+    }
+  ]
+  

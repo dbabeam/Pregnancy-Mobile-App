@@ -1,0 +1,218 @@
+[
+  {
+    "symptom": "Morning Sickness",
+    "description": "Nausea and vomiting in early pregnancy.",
+    "advice": "Eat small frequent meals and avoid strong smells."
+  },
+  {
+    "symptom": "Fatigue",
+    "description": "Extreme tiredness due to hormonal changes.",
+    "advice": "Take naps, eat healthy, and drink enough water."
+  },
+  {
+    "symptom": "Breast Tenderness",
+    "description": "Soreness and swelling in the breasts.",
+    "advice": "Wear a supportive bra and avoid tight clothing."
+  },
+  {
+    "symptom": "Food Cravings",
+    "description": "Intense desire for specific foods.",
+    "advice": "Indulge in moderation and maintain a balanced diet."
+  },
+  {
+    "symptom": "Increased Sense of Smell",
+    "description": "Heightened sensitivity to odors.",
+    "advice": "Avoid strong scents and keep your environment well-ventilated."
+  },
+  {
+    "symptom": "Constipation",
+    "description": "Difficulty in bowel movements due to hormonal changes.",
+    "advice": "Increase fiber intake and drink plenty of water."
+  },
+  {
+    "symptom": "Heartburn",
+    "description": "Burning sensation in the chest due to hormonal changes.",
+    "advice": "Eat smaller meals and avoid spicy foods."
+  },
+  {
+    "symptom": "Dizziness",
+    "description": "Feeling lightheaded or faint, often due to hormonal shifts.",
+    "advice": "Stand up slowly and stay hydrated."
+  },
+  {
+    "symptom": "Increased Fatigue",
+    "description": "Feeling more tired than usual as the body works harder.",
+    "advice": "Rest when needed and prioritize sleep."
+  },
+  {
+    "symptom": "Shortness of Breath",
+    "description": "Difficulty breathing as the body adjusts to pregnancy.",
+    "advice": "Practice deep breathing exercises and avoid strenuous activities."
+  },
+  {
+    "symptom": "Swollen Feet and Ankles",
+    "description": "Fluid retention causing swelling in the lower extremities.",
+    "advice": "Elevate your feet and avoid standing for long periods."
+  },
+  {
+    "symptom": "Increased Appetite",
+    "description": "Feeling hungrier as the body needs more nutrients.",
+    "advice": "Eat healthy snacks and balanced meals."
+  },
+  {
+    "symptom": "Skin Changes",
+    "description": "Changes in skin texture or pigmentation.",
+    "advice": "Use gentle skincare products and stay hydrated."
+  },
+  {
+    "symptom": "Headaches",
+    "description": "Increased frequency of headaches due to hormonal changes.",
+    "advice": "Stay hydrated and consider relaxation techniques."
+  },
+  {
+    "symptom": "Cramping",
+    "description": "Mild abdominal cramps as the uterus expands.",
+    "advice": "Rest and apply a warm compress if needed."
+  },
+  {
+    "symptom": "Nasal Congestion",
+    "description": "Stuffy nose due to increased blood flow and hormonal changes.",
+    "advice": "Use saline nasal sprays and stay hydrated."
+  },
+  {
+    "symptom": "Leg Cramps",
+    "description": "Painful muscle contractions in the legs, especially at night.",
+    "advice": "Stretch your legs before bed and stay hydrated."
+  },
+  {
+    "symptom": "Varicose Veins",
+    "description": "Enlarged veins, often in the legs, due to increased blood volume.",
+    "advice": "Elevate your legs and wear compression stockings."
+  },
+  {
+    "symptom": "Bloating",
+    "description": "Feeling of fullness or swelling in the abdomen.",
+    "advice": "Eat smaller meals and avoid carbonated drinks."
+  },
+  {
+    "symptom": "Increased Vaginal Discharge",
+    "description": "More discharge as the body prepares for childbirth.",
+    "advice": "Wear breathable cotton underwear and maintain hygiene."
+  },
+  {
+    "symptom": "Changes in Libido",
+    "description": "Fluctuations in sexual desire due to hormonal changes.",
+    "advice": "Communicate with your partner and prioritize comfort."
+  },
+  {
+    "symptom": "Insomnia",
+    "description": "Difficulty sleeping as the body adjusts to pregnancy.",
+    "advice": "Establish a bedtime routine and create a comfortable sleep environment."
+  },
+  {
+    "symptom": "Pica",
+    "description": "Craving for non-food items like dirt or chalk.",
+    "advice": "Consult your doctor if you experience unusual cravings."
+  },
+  {
+    "symptom": "Increased Sweating",
+    "description": "More perspiration due to hormonal changes.",
+    "advice": "Wear breathable fabrics and stay cool."
+  },
+  {
+    "symptom": "Changes in Hair Growth",
+    "description": "Hair may become thicker or fall out more than usual.",
+    "advice": "Use gentle hair care products and avoid excessive heat styling."
+  },
+  {
+    "symptom": "Joint Pain",
+    "description": "Discomfort in joints as the body prepares for childbirth.",
+    "advice": "Engage in gentle exercises and consider prenatal massage."
+  },
+  {
+    "symptom": "Increased Saliva Production",
+    "description": "More saliva than usual, often due to hormonal changes.",
+    "advice": "Chew gum or suck on hard candies to manage excess saliva."
+  },
+  {
+    "symptom": "Nausea",
+    "description": "Feeling queasy, especially in the morning.",
+    "advice": "Ginger tea or crackers can help alleviate nausea."
+  },
+  {
+    "symptom": "Changes in Taste",
+    "description": "Altered taste preferences or aversions.",
+    "advice": "Experiment with different foods to find what works for you."
+  },
+  {
+    "symptom": "Increased Heart Rate",
+    "description": "Heart beating faster as the body adapts to pregnancy.",
+    "advice": "Monitor your heart rate and consult a doctor if concerned."
+  },
+  {
+    "symptom": "Heart Palpitations",
+    "description": "Increased heart rate or fluttering sensation in the chest.",
+    "advice": "Stay calm, avoid caffeine, and consult your doctor if persistent."
+  },
+  {
+    "symptom": "Stretch Marks",
+    "description": "Marks on the skin as it stretches to accommodate the growing belly.",
+    "advice": "Moisturize regularly to improve skin elasticity."
+  },
+  
+  {
+    "symptom": "Back Pain",
+    "description": "Discomfort in the lower back as the body adjusts.",
+    "advice": "Practice good posture and consider prenatal yoga."
+  },
+  {
+    "symptom": "Frequent Urination",
+    "description": "Increased need to urinate due to pressure on the bladder.",
+    "advice": "Stay hydrated but limit fluids before bedtime."
+  },
+  {
+    "symptom": "Mood Swings",
+    "description": "Emotional fluctuations due to hormonal changes.",
+    "advice": "Engage in relaxation techniques and talk to someone supportive."
+  },
+  {
+    "symptom": "Skin Pigmentation Changes",
+    "description": "Darkening of certain areas of the skin.",
+    "advice": "Use sunscreen and moisturize to protect your skin."
+  },
+  {
+    "symptom": "Increased Urination at Night",
+    "description": "Frequent need to urinate during the night.",
+    "advice": "Limit fluid intake in the evening and empty your bladder before bed."
+  },
+  {
+    "symptom": "Changes in Body Odor",
+    "description": "Altered body scent due to hormonal changes.",
+    "advice": "Maintain good hygiene and wear breathable fabrics."
+  },
+  {
+    "symptom": "Swollen Gums",
+    "description": "Gums may become swollen or bleed more easily.",
+    "advice": "Practice good oral hygiene and visit a dentist regularly."
+  },
+  {
+    "symptom": "Increased Heartburn",
+    "description": "More frequent heartburn as pregnancy progresses.",
+    "advice": "Avoid trigger foods and consider antacids if needed."
+  },
+  {
+    "symptom": "Changes in Skin Texture",
+    "description": "Skin may feel different, such as being drier or oilier.",
+    "advice": "Use appropriate skincare products for your skin type."
+  },
+  {
+    "symptom": "Increased Sensitivity to Temperature",
+    "description": "Feeling hotter or colder than usual.",
+    "advice": "Dress in layers and adjust your environment as needed."
+  },
+  {
+    "symptom": "Changes in Vision",
+    "description": "Blurred vision or changes in eyesight.",
+    "advice": "Consult an eye specialist if you experience significant changes."
+  }
+]

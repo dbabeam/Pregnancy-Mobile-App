@@ -1,0 +1,38 @@
+version: "3.1"
+
+intents:
+  - greet
+  - goodbye
+  - ask_pregnancy
+  - ask_diet
+  - ask_symptoms
+  - fallback
+
+responses:
+  utter_greet:
+    - text: "Hello! I'm your pregnancy care assistant. How can I help you today?"
+
+  utter_goodbye:
+    - text: "Goodbye! Take care of yourself and your baby."
+
+  utter_ask_pregnancy:
+    - text: |
+        You might be pregnant if you experience symptoms like a missed period, nausea, tender breasts, fatigue, or frequent urination. 
+        A pregnancy test is the best way to confirm. Would you like help tracking your period or symptoms?
+
+  utter_ask_diet:
+    - text: |
+        A balanced pregnancy diet includes folic acid, iron, calcium, protein, and fiber. 
+        Try to eat leafy greens, lean proteins, dairy, fruits, and whole grains. Want a sample meal plan?
+
+  utter_ask_symptoms:
+    - text: |
+        Common pregnancy symptoms include nausea, fatigue, back pain, food cravings, and mood changes. 
+        If anything feels unusual or severe, please talk to a doctor.
+
+  utter_fallback:
+    - text: "Sorry, I didn’t understand that. Could you please rephrase?"
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true
