@@ -5,6 +5,7 @@ interface Props {
   name: string;
   backgroundColor?: string;
   style?: ViewStyle;
+  profilePicture?: string | null
 }
 
 const ProfileHeader: React.FC<Props> = ({ name, backgroundColor = "#ffffff55", style }) => {
