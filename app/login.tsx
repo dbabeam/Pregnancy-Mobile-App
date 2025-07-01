@@ -33,7 +33,7 @@ const handleLogin = async () => {
 
   setLoading(true);
   try {
-    const response = await fetch("http://192.168.137.57:5000/api/patients/login", {
+    const response = await fetch("http://172.20.10.2:5000/api/patients/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),

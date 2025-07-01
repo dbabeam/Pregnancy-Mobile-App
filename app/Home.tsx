@@ -257,7 +257,7 @@ const HomeScreen = () => {
       const userId = await AsyncStorage.getItem("userId")
       if (!token || !userId) throw new Error("User not authenticated")
 
-      const response = await fetch(`http://192.168.137.57:5000/api/patients/profile/${userId}`, {
+      const response = await fetch(`http://172.20.10.2:5000/api/patients/profile/${userId}`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -324,7 +324,7 @@ const HomeScreen = () => {
             <Ionicons name="flower" size={16} color="white" />
             <Text style={s.trimesterText}>
               {pregnancyData
-                ? `${pregnancyData.trimesterText} • Week ${pregnancyData.totalWeeks}${pregnancyData.extraDays > 0 ? `+${pregnancyData.extraDays}` : ""}`
+                ? `${pregnancyData.trimesterText} • Week ${pregnancyData.totalWeeks}`
                 : "Your Journey"}
             </Text>
           </LinearGradient>

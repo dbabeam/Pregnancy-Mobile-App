@@ -1,46 +1,54 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-    FlatList,
-    Image,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
-const messagesData = [
-  {
-    id: "1",
-    name: "Abena Mensah",
-    lastMessage: "Thanks for your advice 💕",
-    time: new Date(),
-    unreadCount: 1,
-    avatar: "https://i.pravatar.cc/150?img=1",
-  },
-  {
-    id: "2",
-    name: "Akosua Boateng",
-    lastMessage: "LMP was around Feb 20",
-    time: new Date(Date.now() - 1000 * 60 * 60 * 2),
-    unreadCount: 0,
-    avatar: "https://i.pravatar.cc/150?img=2",
-  },
-  {
-    id: "3",
-    name: "Efua K.",
-    lastMessage: "I'm due next month!",
-    time: new Date(Date.now() - 1000 * 60 * 60 * 24),
-    unreadCount: 3,
-    avatar: "https://i.pravatar.cc/150?img=3",
-  },
-];
+type Message = {
+  id: number
+  sender: string
+  content: string
+  timestamp: string
+}
 
-const Messages = () => {
+const MessagesScreen = () => {
   const router = useRouter();
-  const [messages, setMessages] = useState(messagesData);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchMessages = useCallback(async () => {
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem("token");
+      const userId = await AsyncStorage.getItem("userId");
+      if (!token || !userId) throw new Error("User not authenticated");
+
+      // Replace with your actual API endpoint
+      const response = await fetch(`http://172.20.10.2:5000/api/messages/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error("Failed to fetch messages");
+      const data = await response.json();
+      setMessages(data);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchMessages();
+  }, [fetchMessages]);
 
   const renderItem = ({ item }: any) => (
     <TouchableOpacity
@@ -65,6 +73,15 @@ const Messages = () => {
     </TouchableOpacity>
   );
 
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#9C27B0" />
+        <Text>Loading messages...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -79,10 +96,11 @@ const Messages = () => {
 
       <FlatList
         data={messages}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={<Text>No messages yet.</Text>}
       />
     </View>
   );
@@ -95,6 +113,7 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     paddingHorizontal: 20,
   },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -165,6 +184,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "bold",
   },
+  timestamp: { fontSize: 12, color: "#888" },
 });
 
-export default Messages;
+export default MessagesScreen;
