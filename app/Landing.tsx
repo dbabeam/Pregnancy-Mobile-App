@@ -28,6 +28,7 @@ const LandingScreen = () => {
       const token = await AsyncStorage.getItem("token")
       const profileCompleted = await AsyncStorage.getItem("profileCompleted")
       const userId = await AsyncStorage.getItem("userId")
+      const isProfileCompleted = profileCompleted === "true"
 
       if (!token) {
         router.replace("/login")
@@ -50,7 +51,7 @@ const LandingScreen = () => {
         return
       }
 
-      if (profileCompleted === "true") {
+      if (isProfileCompleted) {
         router.replace("/Home")
       } else {
         router.replace(`/setup?userId=${userId}`)

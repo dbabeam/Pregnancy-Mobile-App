@@ -92,7 +92,7 @@ exports.loginUser = async (req, res) => {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    const profileCompleted = user.profileCompleted;
+    const profileCompleted = user.profile_completed; // <-- fix this line
 
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
       expiresIn: '7d',
@@ -103,7 +103,7 @@ exports.loginUser = async (req, res) => {
     res.status(200).json({
       user: {
         ...userWithoutPassword,
-        profileCompleted,
+        profileCompleted, // this will now be true after setup
       },
       token,
     });
@@ -209,5 +209,36 @@ exports.getProfile = async (req, res) => {
   } catch (error) {
     console.error('Get profile error:', error);
     res.status(500).json({ error: 'Server error during profile fetch' });
+  }
+};
+
+// SETUP PROFILE
+exports.setupProfile = async (req, res) => {
+  const { userId } = req.params;
+  const { last_menstrual_period, first_pregnancy, health_conditions, other_condition } = req.body;
+
+  try {
+    // Save profile data (update as needed for your schema)
+    await pool.query(
+      `UPDATE patients SET 
+        last_menstrual_period = $1,
+        first_pregnancy = $2,
+        health_conditions = $3,
+        other_condition = $4,
+        profile_completed = true
+      WHERE id = $5`,
+      [
+        last_menstrual_period,
+        first_pregnancy,
+        JSON.stringify(health_conditions),
+        other_condition,
+        userId
+      ]
+    );
+
+    res.status(200).json({ message: "Profile setup complete", profileCompleted: true });
+  } catch (error) {
+    console.error("Profile setup error:", error);
+    res.status(500).json({ error: "Failed to complete profile setup" });
   }
 };
