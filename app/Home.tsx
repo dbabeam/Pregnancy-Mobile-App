@@ -257,7 +257,7 @@ const HomeScreen = () => {
       const userId = await AsyncStorage.getItem("userId")
       if (!token || !userId) throw new Error("User not authenticated")
 
-      const response = await fetch(`http://172.20.10.2:5000/api/patients/profile/${userId}`, {
+      const response = await fetch(`http://172.20.10.5:5000/api/patients/profile/${userId}`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -336,7 +336,8 @@ const HomeScreen = () => {
         contentContainerStyle={{ paddingBottom: 40, paddingTop: 10 }}
         showsVerticalScrollIndicator={false}
       >
-        <TouchableOpacity style={s.tracker} onPress={() => router.push("/Tracker")}>
+        {/* Tracker Card */}
+        <View style={s.tracker}>
           <LinearGradient colors={["#FFE4E6", "#FFF0F3"]} style={s.trackerContent}>
             <View style={s.trackerHeader}>
               <View>
@@ -370,7 +371,7 @@ const HomeScreen = () => {
                 : "Your baby is growing beautifully! 🌱"}
             </Text>
           </LinearGradient>
-        </TouchableOpacity>
+        </View>
 
         <Section
           title="Health & Wellness"

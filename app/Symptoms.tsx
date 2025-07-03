@@ -1,6 +1,7 @@
 "use client"
 
 import { Ionicons } from "@expo/vector-icons"
+import AsyncStorage from "@react-native-async-storage/async-storage"
 import { LinearGradient } from "expo-linear-gradient"
 import { useRouter } from "expo-router"
 import { useEffect, useRef, useState } from "react"
@@ -46,7 +47,7 @@ const symptoms: Symptom[] = [
     icon: "medical-outline",
     color: "#4CAF50",
     lightColor: "#E8F5E8",
-    description: "Morning sickness or general nausea",
+    description: "Morning sickness",
   },
   {
     id: 2,
@@ -94,7 +95,7 @@ const symptoms: Symptom[] = [
     icon: "pulse-outline",
     color: "#FF5722",
     lightColor: "#FBE9E7",
-    description: "Muscle cramps or contractions",
+    description: "Muscle cramps ",
   },
   {
     id: 8,
@@ -122,6 +123,13 @@ const symptoms: Symptom[] = [
   },
 ]
 
+function getInitials(name: string) {
+  if (!name) return ""
+  const parts = name.trim().split(" ")
+  if (parts.length === 1) return parts[0][0].toUpperCase()
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+}
+
 export default function SymptomsScreen() {
   const router = useRouter()
   const [selectedSymptoms, setSelectedSymptoms] = useState<number[]>([])
@@ -129,6 +137,10 @@ export default function SymptomsScreen() {
   const [newSymptom, setNewSymptom] = useState<string>("")
   const [isInputFocused, setIsInputFocused] = useState(false)
   const [keyboardVisible, setKeyboardVisible] = useState(false)
+
+  // Add user data and pregnancy data state
+  const [userData, setUserData] = useState<{ firstName: string; lastMenstrualPeriod: string; profilePicture?: string } | null>(null)
+  const [pregnancyInfo, setPregnancyInfo] = useState<{ week: number; trimester: string } | null>(null)
 
   // Minimal animation values - only for essential UI feedback
   const fadeAnim = useRef(new Animated.Value(0)).current
@@ -151,6 +163,43 @@ export default function SymptomsScreen() {
       keyboardDidShowListener?.remove()
       keyboardDidHideListener?.remove()
     }
+  }, [])
+
+  useEffect(() => {
+    // Fetch user data on mount
+    const fetchUserData = async () => {
+      try {
+        const token = await AsyncStorage.getItem("token")
+        const userId = await AsyncStorage.getItem("userId")
+        if (!token || !userId) return
+
+        const response = await fetch(`http://172.20.10.5:5000/api/patients/profile/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (!response.ok) return
+        const data = await response.json()
+        setUserData({
+          firstName: data.first_name,
+          lastMenstrualPeriod: data.last_menstrual_period,
+          profilePicture: data.profile_picture, // Add this line if your API returns profile_picture
+        })
+
+        // Calculate pregnancy week and trimester
+        if (data.last_menstrual_period) {
+          const lmpDate = new Date(data.last_menstrual_period)
+          const today = new Date()
+          const days = Math.floor((today.getTime() - lmpDate.getTime()) / (1000 * 60 * 60 * 24))
+          const week = Math.floor(days / 7)
+          let trimester = "1st Trimester"
+          if (week > 27) trimester = "3rd Trimester"
+          else if (week > 12) trimester = "2nd Trimester"
+          setPregnancyInfo({ week, trimester })
+        }
+      } catch (e) {
+        // fail silently
+      }
+    }
+    fetchUserData()
   }, [])
 
   const handleKeyboardShow = () => {
@@ -222,6 +271,7 @@ export default function SymptomsScreen() {
         params: {
           symptoms: symptomsParam,
           customSymptoms: customSymptomsParam,
+          trimester: pregnancyInfo?.trimester, // <-- add this
         },
       })
     }
@@ -314,16 +364,35 @@ export default function SymptomsScreen() {
               {!keyboardVisible && (
                 <Animated.View style={[styles.profileSection, { opacity: fadeAnim }]}>
                   <View style={styles.profileImageContainer}>
-                    <Image source={{ uri: "/placeholder.svg?height=80&width=80" }} style={styles.profileImage} />
+                    {userData?.profilePicture ? (
+                      <Image source={{ uri: userData.profilePicture }} style={styles.profileImage} />
+                    ) : (
+                      <View
+                        style={[
+                          styles.profileImage,
+                          { backgroundColor: "#E1BEE7", justifyContent: "center", alignItems: "center" },
+                        ]}
+                      >
+                        <Text style={{ fontSize: 28, color: "#9C27B0", fontWeight: "bold" }}>
+                          {getInitials(userData?.firstName || "U")}
+                        </Text>
+                      </View>
+                    )}
                     <View style={styles.profileImageBorder} />
                   </View>
                   <View style={styles.profileInfo}>
-                    <Text style={styles.welcomeText}>Hello, How are you feeling?</Text>
-                    <Text style={styles.nameText}>Elizabeth</Text>
-                    <View style={styles.weekContainer}>
-                      <Ionicons name="calendar-outline" size={16} color="#9C27B0" />
-                      <Text style={styles.weekText}>Week 24</Text>
-                    </View>
+                    <Text style={styles.welcomeText}>Hello, how are you feeling?</Text>
+                    <Text style={styles.nameText}>
+                      {userData?.firstName ? userData.firstName : "User"}
+                    </Text>
+                    {pregnancyInfo && (
+                      <View style={styles.weekContainer}>
+                        <Ionicons name="calendar-outline" size={16} color="#9C27B0" />
+                        <Text style={styles.weekText}>
+                          Week {pregnancyInfo.week} • {pregnancyInfo.trimester}
+                        </Text>
+                      </View>
+                    )}
                   </View>
                 </Animated.View>
               )}

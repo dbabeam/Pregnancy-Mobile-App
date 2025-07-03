@@ -1,11 +1,14 @@
 "use client"
 
-import { Ionicons } from "@expo/vector-icons"
-import AsyncStorage from "@react-native-async-storage/async-storage"
-import { LinearGradient } from "expo-linear-gradient"
-import { useRouter } from "expo-router"
-import { useEffect, useRef, useState } from "react"
-import { Animated, Dimensions, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import './i18'; // Make sure this path matches your actual file location
+import i18n from './i18'; // Import the i18n instance
+
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
+import { Animated, Dimensions, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const { width, height } = Dimensions.get("window")
 
@@ -87,6 +90,13 @@ const WelcomeScreen = () => {
   useEffect(() => {
     animateFeatures()
   }, [currentSlide])
+
+  // Language initialization effect
+  useEffect(() => {
+    AsyncStorage.getItem('appLanguage').then(lang => {
+      if (lang) i18n.changeLanguage(lang);
+    });
+  }, []);
 
   const checkFirstTimeUser = async () => {
     try {

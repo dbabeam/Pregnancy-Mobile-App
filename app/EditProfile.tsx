@@ -1,5 +1,6 @@
 "use client"
 
+import AsyncStorage from "@react-native-async-storage/async-storage"
 import type React from "react"
 
 import { Ionicons } from "@expo/vector-icons"
@@ -43,15 +44,15 @@ const EditProfile = () => {
   const router = useRouter()
 
   const [profileData, setProfileData] = useState<ProfileData>({
-    firstName: "Elizabeth",
-    lastName: "Larki",
-    email: "elizabeth@gmail.com",
-    phone: "123-456-7890",
-    dueDate: "12/15/2024",
-    lastMenstrualPeriod: "2024-04-01",
-    emergencyContact: "+1 (555) 987-6543",
-    doctorName: "Dr. Emily Chen",
-    hospitalName: "City General Hospital",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    dueDate: "",
+    lastMenstrualPeriod: "",
+    emergencyContact: "",
+    doctorName: "",
+    hospitalName: "",
     imageUri: null,
   })
 
@@ -73,6 +74,35 @@ const EditProfile = () => {
   const bubbleAnim2 = useRef(new Animated.Value(0)).current
 
   useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = await AsyncStorage.getItem("token")
+        const userId = await AsyncStorage.getItem("userId")
+        if (!token || !userId) return
+
+        const response = await fetch(`http://172.20.10.5:5000/api/patients/profile/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (!response.ok) return
+        const data = await response.json()
+        setProfileData((prev) => ({
+          ...prev,
+          firstName: data.first_name || "",
+          lastName: data.last_name || "",
+          email: data.email || "",
+          phone: data.phone || "",
+          dueDate: data.due_date || "",
+          lastMenstrualPeriod: data.last_menstrual_period || "",
+          emergencyContact: data.emergency_contact || "",
+          doctorName: data.doctor_name || "",
+          hospitalName: data.hospital_name || "",
+          imageUri: data.profile_picture || null,
+        }))
+      } catch (e) {
+        // fail silently
+      }
+    }
+    fetchProfile()
     startAnimations()
   }, [])
 
@@ -205,6 +235,7 @@ const EditProfile = () => {
     return true
   }
 
+  // Update user profile in DB
   const handleSave = async () => {
     setSaving(true)
 
@@ -221,8 +252,36 @@ const EditProfile = () => {
       }
     }
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const token = await AsyncStorage.getItem("token")
+      const userId = await AsyncStorage.getItem("userId")
+      if (!token || !userId) throw new Error("Not authenticated")
+
+      // Only allow editing of name, email, phone, etc. Not dueDate
+      const updatePayload = {
+        first_name: profileData.firstName,
+        last_name: profileData.lastName,
+        email: profileData.email,
+        phone: profileData.phone,
+        emergency_contact: profileData.emergencyContact,
+        doctor_name: profileData.doctorName,
+        hospital_name: profileData.hospitalName,
+        // Do not send dueDate for editing
+      }
+
+      const response = await fetch(`http://172.20.10.5:5000/api/patients/profile/${userId}`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatePayload),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update profile")
+      }
+
       setSaving(false)
       Alert.alert("Success", "Your profile has been updated successfully!", [
         {
@@ -230,7 +289,10 @@ const EditProfile = () => {
           onPress: () => router.back(),
         },
       ])
-    }, 2000)
+    } catch (e) {
+      setSaving(false)
+      Alert.alert("Error", "Failed to update profile. Please try again.")
+    }
   }
 
   const updateProfileField = (field: keyof ProfileData, value: string) => {
@@ -391,11 +453,10 @@ const EditProfile = () => {
           <View style={[styles.inputWrapper, focusedField === "dueDate" && styles.inputWrapperFocused]}>
             <Ionicons name="calendar-outline" size={20} color={focusedField === "dueDate" ? "#FF6B9D" : "#BDC3C7"} />
             <TextInput
-              style={styles.inputWithIcon}
+              style={[styles.inputWithIcon, { color: "#888" }]}
               value={profileData.dueDate}
-              onChangeText={(text) => updateProfileField("dueDate", text)}
-              onFocus={() => setFocusedField("dueDate")}
-              onBlur={() => setFocusedField(null)}
+              editable={false}
+              selectTextOnFocus={false}
               placeholder="MM/DD/YYYY"
               placeholderTextColor="#BDC3C7"
             />
@@ -604,7 +665,7 @@ const EditProfile = () => {
           {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity style={styles.backButton} onPress={() => router.back()} activeOpacity={0.7}>
-              <Ionicons name="chevron-back" size={24} color="white" />
+              <Ionicons name="chevron-back" size={24} color="black" />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Edit Profile</Text>
             <View style={styles.headerSpacer} />
@@ -714,7 +775,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "white",
+    color: "black", // changed from white to black
     textAlign: "center",
   },
   headerSpacer: {
