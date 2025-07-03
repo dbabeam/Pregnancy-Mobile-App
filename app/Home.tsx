@@ -2,6 +2,7 @@
 
 import { Ionicons } from "@expo/vector-icons"
 import AsyncStorage from "@react-native-async-storage/async-storage"
+import { BlurView } from "expo-blur"
 import { LinearGradient } from "expo-linear-gradient"
 import { useRouter } from "expo-router"
 import { useCallback, useEffect, useState } from "react"
@@ -257,7 +258,7 @@ const HomeScreen = () => {
       const userId = await AsyncStorage.getItem("userId")
       if (!token || !userId) throw new Error("User not authenticated")
 
-      const response = await fetch(`http://172.20.10.5:5000/api/patients/profile/${userId}`, {
+      const response = await fetch(`http://10.132.115.187:5000/api/patients/profile/${userId}`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -436,7 +437,8 @@ const HomeScreen = () => {
           ]}
         />
 
-        {pregnancyData && (pregnancyData.trimester === 3 || pregnancyData.isOverdue) && (
+        {/* Post Natal Care Section */}
+        {pregnancyData && pregnancyData.trimester === 3 && !pregnancyData.isOverdue ? (
           <FullWidthButton
             title="Post Natal Care"
             subtitle="Recovery & baby care support"
@@ -445,6 +447,44 @@ const HomeScreen = () => {
             shadowColor="#E91E63"
             onPress={() => router.push("/PostNatal")}
           />
+        ) : (
+          <View style={[s.fullWidth, { marginBottom: 20, overflow: "hidden", shadowColor: "#E91E63" }]}>
+            <View pointerEvents="none">
+              <FullWidthButton
+                title="Post Natal Care"
+                subtitle="Recovery & baby care support"
+                icon="heart"
+                colors={["#E91E63", "#D81B60"]}
+                shadowColor="#E91E63"
+                onPress={() => {}}
+              />
+            </View>
+            <BlurView
+              intensity={60}
+              tint="dark"
+              style={StyleSheet.absoluteFill}
+            >
+              <View style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+                borderRadius: 15,
+                backgroundColor: "rgba(0,0,0,0.35)",
+              }}>
+                <Text style={{
+                  color: "#fff",
+                  fontWeight: "bold",
+                  fontSize: 16,
+                  textAlign: "center",
+                  textShadowColor: "#000",
+                  textShadowRadius: 8,
+                }}>
+                  Post Natal Section
+                  Available in 3rd Trimester
+                </Text>
+              </View>
+            </BlurView>
+          </View>
         )}
 
         <FullWidthButton

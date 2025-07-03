@@ -242,3 +242,24 @@ exports.setupProfile = async (req, res) => {
     res.status(500).json({ error: "Failed to complete profile setup" });
   }
 };
+
+// GET ALL PATIENTS
+exports.getAllPatients = async (req, res) => {
+  try {
+    // Exclude sensitive info and optionally exclude the current user
+    const patients = await pool.query(
+      'SELECT id, first_name, last_name, email, profile_picture FROM patients'
+    );
+
+    // Format for frontend
+    const users = patients.rows.map(p => ({
+      id: p.id,
+      name: `${p.first_name} ${p.last_name}`,
+      avatar: p.profile_picture || null,
+      email: p.email,
+    }));
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch patients" });
+  }
+};
