@@ -1,51 +1,54 @@
 "use client"
 
 import AsyncStorage from "@react-native-async-storage/async-storage"
-import { LinearGradient } from "expo-linear-gradient"
 import { useRouter } from "expo-router"
 import { useEffect, useState } from "react"
 import { Image, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native"
 
 export default function NewChatsScreen() {
-  const router = useRouter()
-  const [searchQuery, setSearchQuery] = useState("")
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
   type Contact = {
     id: string
     name: string
     avatar: string
     online: boolean
   }
-  const [contacts, setContacts] = useState<Contact[]>([])
-  const [loading, setLoading] = useState(true)
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchUsers = async () => {
-      setLoading(true)
-      const token = await AsyncStorage.getItem("token")
-      const userId = await AsyncStorage.getItem("userId")
-      const response = await fetch("http://10.132.115.187:5000/api/patients", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const data = await response.json()
-      // Exclude current user
-      setContacts(data.filter((u: { id: string | null }) => u.id !== userId))
-      setLoading(false)
-    }
-    fetchUsers()
-  }, [])
+      setLoading(true);
+      try {
+        const token = await AsyncStorage.getItem("token");
+        const userId = await AsyncStorage.getItem("userId");
+        const response = await fetch("http://100.66.70.8:5000/api/patients", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!response.ok) throw new Error("Failed to fetch users");
+        const data = await response.json();
+        setContacts(data.filter((u: { id: string | null }) => u.id !== userId));
+      } catch (err) {
+        // Show error message
+        setContacts([]);
+        alert("Could not load users. Please check your connection and backend.");
+      }
+      setLoading(false);
+    };
+    fetchUsers();
+  }, []);
 
   const filteredContacts = contacts.filter((c) =>
     c.name.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  );
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <LinearGradient colors={["#E1BEE7", "#9C27B0"]} style={styles.backGradient}>
-            <Text style={styles.backArrow}>←</Text>
-          </LinearGradient>
+        <TouchableOpacity style={styles.simpleBack} onPress={() => router.back()}>
+          <Text style={styles.simpleBackArrow}>←</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Start New Chat</Text>
         <View style={{ width: 40 }} />
@@ -62,7 +65,11 @@ export default function NewChatsScreen() {
       </View>
 
       <ScrollView contentContainerStyle={filteredContacts.length === 0 ? styles.emptyList : {}}>
-        {filteredContacts.length === 0 ? (
+        {loading ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>Loading...</Text>
+          </View>
+        ) : filteredContacts.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>No contacts found.</Text>
           </View>
@@ -93,18 +100,15 @@ export default function NewChatsScreen() {
                   </Text>
                 </View>
               </View>
-              <LinearGradient
-                colors={["#9C27B0", "#E1BEE7"]}
-                style={styles.messageButton}
-              >
+              <View style={styles.messageButton}>
                 <Text style={styles.messageButtonText}>Chat</Text>
-              </LinearGradient>
+              </View>
             </TouchableOpacity>
           ))
         )}
       </ScrollView>
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -119,22 +123,15 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#F3E5F5",
   },
-  backButton: {
+  simpleBack: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    overflow: "hidden",
+    justifyContent: "center",
+    alignItems: "center",
     marginRight: 10,
-    justifyContent: "center",
-    alignItems: "center",
   },
-  backGradient: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  backArrow: {
-    color: "#9C27B0",
+  simpleBackArrow: {
+    color: "#333",
     fontSize: 22,
     fontWeight: "bold",
   },
@@ -142,7 +139,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 20,
     fontWeight: "bold",
-    color: "#9C27B0",
+    color: "#222", // black heading
     textAlign: "center",
   },
   searchBar: {
@@ -210,6 +207,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginLeft: 10,
+    backgroundColor: "#9C27B0",
   },
   messageButtonText: {
     color: "#fff",

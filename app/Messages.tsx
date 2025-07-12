@@ -3,15 +3,15 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    Image,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
+  ActivityIndicator,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
 
-    View,
+  View,
 } from "react-native";
 
 // Dummy contacts for new chat modal (optional)
@@ -35,7 +35,7 @@ const MessagesScreen = () => {
       const userId = await AsyncStorage.getItem("userId");
       if (!token || !userId) throw new Error("User not authenticated");
 
-      const response = await fetch(`http://10.132.115.187:5000/api/messages/${userId}`, {
+      const response = await fetch(`http://100.66.70.8:5000/api/messages/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error("Failed to fetch messages");

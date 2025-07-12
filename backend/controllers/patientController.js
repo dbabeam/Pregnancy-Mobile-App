@@ -109,7 +109,7 @@ exports.loginUser = async (req, res) => {
     });
   } catch (err) {
     console.error('❌ Login error:', err);
-    res.status(500).json({ error: 'Server error' });
+    res.status(401).json({ error: "Invalid credentials" });
   }
 };
 
@@ -246,19 +246,17 @@ exports.setupProfile = async (req, res) => {
 // GET ALL PATIENTS
 exports.getAllPatients = async (req, res) => {
   try {
-    // Exclude sensitive info and optionally exclude the current user
     const patients = await pool.query(
       'SELECT id, first_name, last_name, email, profile_picture FROM patients'
     );
-
-    // Format for frontend
     const users = patients.rows.map(p => ({
       id: p.id,
       name: `${p.first_name} ${p.last_name}`,
       avatar: p.profile_picture || null,
       email: p.email,
+      online: true // or false if you don't track online status
     }));
-    res.json(users);
+    res.json(users); // <-- Make sure this is present!
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch patients" });
   }

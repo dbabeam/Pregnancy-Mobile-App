@@ -99,7 +99,7 @@ const ProfileScreen = () => {
         const userId = await AsyncStorage.getItem("userId")
         if (!token || !userId) return
 
-        const response = await fetch(`http://10.132.115.187:5000/api/patients/profile/${userId}`, {
+        const response = await fetch(`http://100.66.70.8:5000/api/patients/profile/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
         if (!response.ok) return

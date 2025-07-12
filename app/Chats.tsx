@@ -37,7 +37,7 @@ const ChatScreen = () => {
   useEffect(() => {
     const fetchMessages = async () => {
       const token = await AsyncStorage.getItem("token");
-      const response = await fetch(`http://10.132.115.187:5000/api/messages/${currentUserId}`, {
+      const response = await fetch(`http://100.66.70.8:5000/api/messages/${currentUserId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
