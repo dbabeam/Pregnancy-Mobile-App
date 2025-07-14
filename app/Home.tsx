@@ -1,9 +1,10 @@
 "use client"
-
+import ChatButton from "@/components/Chatbutton"
 import { Ionicons } from "@expo/vector-icons"
 import { LinearGradient } from "expo-linear-gradient"
 import { useRouter } from "expo-router"
 import { useEffect, useState } from "react"
+import type { ColorValue } from "react-native"
 import { ActivityIndicator, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import ProfileHeader from "../components/ProfileHeader"
 
@@ -139,7 +140,7 @@ const s = StyleSheet.create({
   quoteAuthor: { fontSize: 12, color: "#7F8C8D", fontWeight: "500" },
 })
 
-const babySizes = {
+const babySizes: { [key: string]: string } = {
   4: "poppy seed 🌱",
   8: "kidney bean 🫘",
   12: "lime 🍋",
@@ -154,14 +155,41 @@ const babySizes = {
 
 const HomeScreen = () => {
   const router = useRouter()
-  const [userData, setUserData] = useState(null)
-  const [pregnancyData, setPregnancyData] = useState(null)
+  type UserData = {
+    firstName: string
+    lastName: string
+    lastMenstrualPeriod: string
+    profilePicture: string | null
+  }
+  const [userData, setUserData] = useState<UserData | null>(null)
+  type PregnancyData = {
+    totalWeeks: number
+    extraDays: number
+    trimester: number
+    trimesterText: string
+    remainingWeeks: number
+    progressPercentage: number
+    babySize: string
+    isOverdue: boolean
+  }
+  const [pregnancyData, setPregnancyData] = useState<PregnancyData | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const calculatePregnancy = (lmp) => {
+  interface CalculatePregnancyResult {
+    totalWeeks: number
+    extraDays: number
+    trimester: number
+    trimesterText: string
+    remainingWeeks: number
+    progressPercentage: number
+    babySize: string
+    isOverdue: boolean
+  }
+
+  const calculatePregnancy = (lmp: string): CalculatePregnancyResult => {
     const lmpDate = new Date(lmp)
     const today = new Date()
-    const daysSinceLMP = Math.floor((today - lmpDate) / (1000 * 60 * 60 * 24))
+    const daysSinceLMP = Math.floor((today.getTime() - lmpDate.getTime()) / (1000 * 60 * 60 * 24))
     const totalWeeks = Math.floor(daysSinceLMP / 7)
     const extraDays = daysSinceLMP % 7
 
@@ -170,11 +198,11 @@ const HomeScreen = () => {
 
     const dueDate = new Date(lmpDate)
     dueDate.setDate(dueDate.getDate() + 280)
-    const remainingDays = Math.max(0, Math.floor((dueDate - today) / (1000 * 60 * 60 * 24)))
+    const remainingDays = Math.max(0, Math.floor((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)))
     const remainingWeeks = Math.floor(remainingDays / 7)
     const progressPercentage = Math.min(100, Math.round((totalWeeks / 40) * 100))
 
-    const babySize = babySizes[Math.floor(totalWeeks / 4) * 4] || babySizes[40] || "precious baby 👶🏾"
+    const babySize = babySizes[String(Math.floor(totalWeeks / 4) * 4)] || babySizes["40"] || "precious baby 👶🏾"
 
     return {
       totalWeeks,
@@ -225,11 +253,19 @@ const HomeScreen = () => {
   const fullName = `${userData?.firstName || ""} ${userData?.lastName || ""}`.trim()
   const userInitials = ((userData?.firstName?.[0] || "") + (userData?.lastName?.[0] || "")).slice(0, 2) || "U"
 
-  const Card = ({ title, subtitle, icon, colors, onPress }) => (
+  type CardProps = {
+    title: string
+    subtitle: string
+    icon: string
+    colors: readonly [ColorValue, ColorValue, ...ColorValue[]]
+    onPress: () => void
+  }
+
+  const Card = ({ title, subtitle, icon, colors, onPress }: CardProps) => (
     <TouchableOpacity style={s.card} onPress={onPress}>
       <LinearGradient colors={colors} style={s.cardContent}>
         <View style={s.iconContainer}>
-          <Ionicons name={icon} size={28} color={colors[0].replace(/[^#]/g, "").slice(0, 7)} />
+          <Ionicons name={icon} size={28} color={typeof colors[0] === "string" ? colors[0] : "#9C27B0"} />
         </View>
         <Text style={s.cardTitle}>{title}</Text>
         <Text style={s.cardSubtitle}>{subtitle}</Text>
@@ -237,7 +273,23 @@ const HomeScreen = () => {
     </TouchableOpacity>
   )
 
-  const FullWidthButton = ({ title, subtitle, icon, colors, onPress, shadowColor }) => (
+  type FullWidthButtonProps = {
+    title: string
+    subtitle?: string
+    icon: string
+    colors: readonly [ColorValue, ColorValue, ...ColorValue[]]
+    onPress: () => void
+    shadowColor: string
+  }
+
+  const FullWidthButton = ({
+    title,
+    subtitle,
+    icon,
+    colors,
+    onPress,
+    shadowColor,
+  }: FullWidthButtonProps) => (
     <TouchableOpacity style={[s.fullWidth, { shadowColor }]} onPress={onPress}>
       <LinearGradient colors={colors} style={s.fullWidthContent}>
         <View style={s.emergencyContent}>
@@ -255,7 +307,7 @@ const HomeScreen = () => {
         <SafeAreaView>
           <View style={s.headerTop}>
             <TouchableOpacity onPress={() => router.push("/Profile")}>
-              <ProfileHeader name={fullName} initials={userInitials} profilePicture={userData?.profilePicture} />
+              <ProfileHeader name={fullName} profilePicture={userData?.profilePicture} />
             </TouchableOpacity>
             <TouchableOpacity style={s.notificationButton} onPress={() => router.push("/Notification")}>
               <View style={s.notificationBadge}>
@@ -393,7 +445,7 @@ const HomeScreen = () => {
             onPress={() => router.push("/PostNatal")}
           />
         )}
-
+        <ChatButton />
         <FullWidthButton
           title="Emergency Help"
           icon="medical"

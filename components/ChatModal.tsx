@@ -1,25 +1,33 @@
-import { Ionicons } from '@expo/vector-icons';
-import React, { useRef, useState } from 'react';
+// React Native ChatModal converted from your React Web component
+
+import React, { useState, useRef, useEffect } from 'react';
 import {
-  FlatList,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  StyleSheet,
+  Modal,
+  View,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Animated
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons'; // or use lucide-react-native if available
 
-type Message = {
-  id: string;
-  content: string;
-  sender: 'user' | 'bot';
-  timestamp: Date;
+type ChatModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
 };
 
-const MyAIScreen = () => {
+const ChatModal = ({ isOpen, onClose }: ChatModalProps) => {
+  type Message = {
+    id: string;
+    content: string;
+    sender: 'user' | 'bot';
+    timestamp: Date;
+  };
+  
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -43,7 +51,6 @@ const MyAIScreen = () => {
       const formData = new FormData();
       formData.append('msg', userMessage.content);
 
-      // Change 'localhost' to your server IP if testing on a device
       const response = await fetch('http://localhost:8080/get', {
         method: 'POST',
         body: formData,
@@ -92,60 +99,85 @@ const MyAIScreen = () => {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={{ flex: 1 }}
-      >
-        <View style={styles.header}>
-          <Text style={styles.title}>Ask MyAI</Text>
-        </View>
+    <Modal
+      visible={isOpen}
+      animationType="slide"
+      transparent
+      onRequestClose={onClose}
+    >
+      <View style={styles.modalOverlay}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.container}
+        >
+          <View style={styles.header}>
+            <Text style={styles.title}>Chat with Legal Assistant</Text>
+            <TouchableOpacity onPress={onClose}>
+              <Ionicons name="close" size={24} color="black" />
+            </TouchableOpacity>
+          </View>
 
-        <FlatList
-          ref={flatListRef}
-          data={messages}
-          keyExtractor={(item) => item.id}
-          renderItem={renderMessage}
-          contentContainerStyle={styles.messagesList}
-          onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
-        />
-
-        {isLoading && (
-          <Text style={styles.loading}>Bot is typing...</Text>
-        )}
-
-        <View style={styles.inputContainer}>
-          <TextInput
-            value={inputMessage}
-            onChangeText={setInputMessage}
-            placeholder="Type your question..."
-            style={styles.input}
-            onSubmitEditing={handleSendMessage}
-            editable={!isLoading}
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            keyExtractor={(item) => item.id}
+            renderItem={renderMessage}
+            contentContainerStyle={styles.messagesList}
+            onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
           />
-          <TouchableOpacity
-            onPress={handleSendMessage}
-            disabled={isLoading}
-            style={[styles.sendButton, isLoading && { opacity: 0.5 }]}
-          >
-            <Ionicons name="send" size={20} color="white" />
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+
+          {isLoading && (
+            <Text style={styles.loading}>Bot is typing...</Text>
+          )}
+
+          <View style={styles.inputContainer}>
+            <TextInput
+              value={inputMessage}
+              onChangeText={setInputMessage}
+              placeholder="Type your message..."
+              style={styles.input}
+              onSubmitEditing={handleSendMessage}
+              editable={!isLoading}
+            />
+            <TouchableOpacity
+              onPress={handleSendMessage}
+              disabled={isLoading}
+              style={[styles.sendButton, isLoading && { opacity: 0.5 }]}
+            >
+              <Ionicons name="send" size={20} color="white" />
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </View>
+    </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  header: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderColor: '#eee',
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'center',
     alignItems: 'center',
   },
+  container: {
+    width: '90%',
+    height: '80%',
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 10,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderColor: '#ddd',
+    paddingBottom: 10,
+  },
   title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '600',
   },
   messagesList: {
     paddingVertical: 10,
@@ -184,7 +216,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderTopWidth: 1,
     borderColor: '#ddd',
-    padding: 10,
+    paddingTop: 10,
   },
   input: {
     flex: 1,
@@ -207,4 +239,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MyAIScreen;
+export default ChatModal;

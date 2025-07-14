@@ -32,8 +32,8 @@ const handleLogin = async () => {
   }
 
   setLoading(true);
-  try {
-    const response = await fetch("http://10.132.115.187:5000/api/patients/login", {
+  try {76
+    const response = await fetch("http://10.232.248.236:5000/api/patients/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),

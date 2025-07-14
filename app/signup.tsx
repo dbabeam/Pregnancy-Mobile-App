@@ -89,7 +89,7 @@ const handleSignup = async () => {
   setLoading(true)
 
   try {
-    const response = await fetch("http://10.132.115.187:5000/api/patients/signup", {
+    const response = await fetch("http://10.232.248.236:5000/api/patients/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
