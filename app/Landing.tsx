@@ -35,7 +35,7 @@ const LandingScreen = () => {
         return
       }
 
-      const response = await fetch("http://10.132.115.187:5000/api/patients/verify", {
+      const response = await fetch("http://10.232.66.19:5000/api/patients/verify", {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,

@@ -35,7 +35,7 @@ const MessagesScreen = () => {
       const userId = await AsyncStorage.getItem("userId");
       if (!token || !userId) throw new Error("User not authenticated");
 
-      const response = await fetch(`http://100.66.70.8:5000/api/messages/${userId}`, {
+      const response = await fetch(`http://10.232.66.19:5000/api/messages/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error("Failed to fetch messages");
