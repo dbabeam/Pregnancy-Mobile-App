@@ -4,7 +4,7 @@ import { Ionicons } from "@expo/vector-icons"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { LinearGradient } from "expo-linear-gradient"
 import { useRouter } from "expo-router"
-import jwtDecode from "jwt-decode"
+import { jwtDecode } from "jwt-decode"
 import { useEffect, useState } from "react"
 import {
   Alert,
@@ -51,7 +51,7 @@ export default function SetupNew() {
 
         const token = await AsyncStorage.getItem("token")
         if (token) {
-          const decoded = jwtDecode(token)
+          const decoded = jwtDecode<{ id?: string; userId?: string; user_id?: string; sub?: string }>(token)
           const actualUserId = decoded.id || decoded.userId || decoded.user_id || decoded.sub
           if (actualUserId) {
             setUserId(actualUserId.toString())
@@ -119,7 +119,7 @@ export default function SetupNew() {
         other_condition: otherCondition.trim(),
       }
 
-      const response = await fetch(`http://10.132.115.187:5000/api/patients/setup/${finalUserId}`, {
+      const response = await fetch(`http://10.232.66.19:5000/api/patients/setup/${finalUserId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

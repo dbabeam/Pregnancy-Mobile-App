@@ -1,60 +1,102 @@
 import { Ionicons } from "@expo/vector-icons";
-import { formatDistanceToNow } from "date-fns";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
-    FlatList,
-    Image,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+
+  View,
 } from "react-native";
 
-const messagesData = [
-  {
-    id: "1",
-    name: "Abena Mensah",
-    lastMessage: "Thanks for your advice 💕",
-    time: new Date(),
-    unreadCount: 1,
-    avatar: "https://i.pravatar.cc/150?img=1",
-  },
-  {
-    id: "2",
-    name: "Akosua Boateng",
-    lastMessage: "LMP was around Feb 20",
-    time: new Date(Date.now() - 1000 * 60 * 60 * 2),
-    unreadCount: 0,
-    avatar: "https://i.pravatar.cc/150?img=2",
-  },
-  {
-    id: "3",
-    name: "Efua K.",
-    lastMessage: "I'm due next month!",
-    time: new Date(Date.now() - 1000 * 60 * 60 * 24),
-    unreadCount: 3,
-    avatar: "https://i.pravatar.cc/150?img=3",
-  },
+// Dummy contacts for new chat modal (optional)
+const dummyContacts = [
+  { id: "101", name: "Dr. Ama Mensah", avatar: "https://randomuser.me/api/portraits/women/65.jpg" },
+  { id: "102", name: "Nurse Kwame", avatar: "https://randomuser.me/api/portraits/men/45.jpg" },
+  { id: "103", name: "Support Group", avatar: "https://randomuser.me/api/portraits/men/32.jpg" },
 ];
 
-const Messages = () => {
+const MessagesScreen = () => {
   const router = useRouter();
-  const [messages, setMessages] = useState(messagesData);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+
+  // Fetch all conversations for the user
+  const fetchMessages = useCallback(async () => {
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem("token");
+      const userId = await AsyncStorage.getItem("userId");
+      if (!token || !userId) throw new Error("User not authenticated");
+
+      const response = await fetch(`http://10.232.66.19:5000/api/messages/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error("Failed to fetch messages");
+      const data = await response.json();
+
+      // Group messages by conversation (latest message per contact)
+      const conversations: { [key: string]: any } = {};
+      data.forEach((msg: any) => {
+        const contactId = msg.sender_id === userId ? msg.receiver_id : msg.sender_id;
+        if (
+          !conversations[contactId] ||
+          new Date(msg.time) > new Date(conversations[contactId].time)
+        ) {
+          conversations[contactId] = {
+            id: contactId,
+            name: msg.sender_id === userId ? msg.receiver_name : msg.sender_name,
+            avatar: msg.sender_id === userId ? msg.receiver_avatar : msg.sender_avatar,
+            lastMessage: msg.content,
+            time: msg.time,
+            unreadCount: msg.unreadCount || 0,
+          };
+        }
+      });
+
+      setMessages(Object.values(conversations));
+    } catch (error) {
+      setMessages([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchMessages();
+  }, [fetchMessages]);
+
+  // Filter messages by search
+  const filteredMessages = messages.filter(
+    (msg) =>
+      msg.name?.toLowerCase().includes(search.toLowerCase()) ||
+      msg.lastMessage?.toLowerCase().includes(search.toLowerCase())
+  );
 
   const renderItem = ({ item }: any) => (
     <TouchableOpacity
       style={styles.card}
-      onPress={() => router.push(`./ChatScreen/${item.id}`)}
+      onPress={() =>
+        router.push({
+          pathname: "/Chats",
+          params: { receiverId: item.id, receiverName: item.name },
+        })
+      }
     >
       <Image source={{ uri: item.avatar }} style={styles.avatar} />
       <View style={styles.textContainer}>
         <View style={styles.nameRow}>
           <Text style={styles.name}>{item.name}</Text>
-          <Text style={styles.time}>{formatDistanceToNow(item.time, { addSuffix: true })}</Text>
+          <Text style={styles.time}>{new Date(item.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
         </View>
         <View style={styles.messageRow}>
-          <Text style={styles.message}>{item.lastMessage}</Text>
+          <Text style={styles.message} numberOfLines={1}>{item.lastMessage}</Text>
           {item.unreadCount > 0 && (
             <View style={styles.badge}>
               <Text style={styles.badgeText}>{item.unreadCount}</Text>
@@ -65,24 +107,54 @@ const Messages = () => {
     </TouchableOpacity>
   );
 
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#9C27B0" />
+        <Text>Loading chats...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
+      {/* Header with search and new chat */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Messages</Text>
-        <TouchableOpacity onPress={() => {}}>
-          <Ionicons name="chatbubble-ellipses-outline" size={24} color="#333" />
+        <TouchableOpacity onPress={() => router.push("/NewChats")}>
+          <Ionicons name="chatbubble-ellipses-outline" size={26} color="#9C27B0" />
         </TouchableOpacity>
+      </View>
+      <View style={styles.searchBar}>
+        <Ionicons name="search" size={18} color="#999" style={{ marginRight: 8 }} />
+        <TextInput
+          placeholder="Search chats"
+          placeholderTextColor="#aaa"
+          style={styles.searchInput}
+          value={search}
+          onChangeText={setSearch}
+        />
       </View>
 
       <FlatList
-        data={messages}
-        keyExtractor={(item) => item.id}
+        data={filteredMessages}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
-        contentContainerStyle={{ paddingBottom: 40 }}
+        contentContainerStyle={
+          filteredMessages.length === 0
+            ? { flex: 1, justifyContent: "center", alignItems: "center" }
+            : { paddingBottom: 40 }
+        }
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <View style={{ alignItems: "center", justifyContent: "center", flex: 1 }}>
+            <Ionicons name="chatbubble-outline" size={60} color="#E1BEE7" style={{ marginBottom: 10 }} />
+            <Text style={{ color: "#9C27B0", fontWeight: "bold", fontSize: 18 }}>Add New Chats</Text>
+          </View>
+        }
       />
     </View>
   );
@@ -95,15 +167,30 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     paddingHorizontal: 20,
   },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 10,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: "bold",
+  },
+  searchBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F3E5F5",
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    marginBottom: 18,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: "#333",
   },
   card: {
     flexDirection: "row",
@@ -167,4 +254,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Messages;
+export default MessagesScreen;

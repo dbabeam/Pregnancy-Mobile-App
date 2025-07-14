@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { adviceBySymptomAndTrimester } from './adviceData';
 
 interface Symptom {
   id: number;
@@ -176,6 +177,7 @@ const symptoms: Symptom[] = [
 interface RouteParams {
   symptoms?: string;
   customSymptoms?: string;
+  trimester?: string;
 }
 
 export default function AdviceScreen() {
@@ -183,6 +185,7 @@ export default function AdviceScreen() {
   const params = useLocalSearchParams<RouteParams>();
   const symptomsParam = params.symptoms;
   const customSymptomsParam = params.customSymptoms;
+  const trimesterParam = params.trimester;
   
   // Convert the comma-separated string back to an array of numbers
   const selectedSymptoms = symptomsParam ? 
@@ -229,6 +232,37 @@ export default function AdviceScreen() {
     }
   };
 
+  // Get advice based on symptoms and trimester
+  const getAdviceForTrimester = () => {
+    const advice: { title: string; advice: string[] }[] = [];
+    
+    selectedSymptoms.forEach(symptomId => {
+      const symptomName = symptoms.find(s => s.id === symptomId)?.name;
+      
+      if (symptomName) {
+        const trimesterAdvice = adviceBySymptomAndTrimester[symptomName]?.[trimesterParam];
+        advice.push({
+          title: `Advice for ${symptomName}`,
+          advice: trimesterAdvice
+            ? Array.isArray(trimesterAdvice) ? trimesterAdvice : [trimesterAdvice]
+            : ["No specific advice for this symptom and trimester."],
+        });
+      }
+    });
+    
+    // Add custom symptoms advice
+    customSymptoms.forEach(symptom => {
+      advice.push({
+        title: `Managing ${symptom.name}`,
+        advice: customSymptomAdvice.advice,
+      });
+    });
+    
+    return advice;
+  };
+  
+  const adviceList = getAdviceForTrimester();
+
   return (
     <LinearGradient
       colors={['#fff9fb', '#f8e4f3']}
@@ -264,62 +298,22 @@ export default function AdviceScreen() {
           </View>
 
           <ScrollView style={styles.adviceScrollView}>
-            {/* Standard Symptoms Advice */}
-            {selectedSymptoms.map((symptomId) => {
-              const symptomData = adviceData[symptomId];
-              const symptomName = symptoms.find(s => s.id === symptomId)?.name;
-              
-              if (!symptomData) return null;
-              
-              return (
-                <View key={`standard-${symptomId}`} style={styles.adviceCard}>
-                  <View style={styles.adviceHeader}>
-                    <Ionicons 
-                      name={(symptoms.find(s => s.id === symptomId)?.icon || 'medical') as any} 
-                      size={24} 
-                      color="#9c27b0" 
-                    />
-                    <Text style={styles.adviceTitle}>{symptomData.title}</Text>
-                  </View>
-                  
-                  <View style={styles.adviceList}>
-                    {symptomData.advice.map((item, index) => (
-                      <View key={index} style={styles.adviceItem}>
-                        <View style={styles.bulletPoint} />
-                        <Text style={styles.adviceText}>{item}</Text>
-                      </View>
-                    ))}
-                  </View>
-                </View>
-              );
-            })}
-            
-            {/* Custom Symptoms Advice */}
-            {customSymptoms.map((symptom) => (
-              <View key={`custom-${symptom.id}`} style={styles.adviceCard}>
+            {adviceList.map((item, index) => (
+              <View key={index} style={styles.adviceCard}>
                 <View style={styles.adviceHeader}>
                   <Ionicons 
-                    name="add-circle" 
+                    name="medical-outline" 
                     size={24} 
                     color="#9c27b0" 
                   />
-                  <Text style={styles.adviceTitle}>
-                    {`Managing ${symptom.name}`}
-                  </Text>
-                </View>
-                
-                <View style={styles.customSymptomNote}>
-                  <Ionicons name="information-circle" size={18} color="#9c27b0" />
-                  <Text style={styles.customSymptomNoteText}>
-                    This is a custom symptom you added
-                  </Text>
+                  <Text style={styles.adviceTitle}>{item.title}</Text>
                 </View>
                 
                 <View style={styles.adviceList}>
-                  {customSymptomAdvice.advice.map((item, index) => (
-                    <View key={index} style={styles.adviceItem}>
+                  {item.advice.map((adviceItem, idx) => (
+                    <View key={idx} style={styles.adviceItem}>
                       <View style={styles.bulletPoint} />
-                      <Text style={styles.adviceText}>{item}</Text>
+                      <Text style={styles.adviceText}>{adviceItem}</Text>
                     </View>
                   ))}
                 </View>

@@ -1,17 +1,18 @@
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-    Dimensions,
-    FlatList,
-    Image,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  FlatList,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 const { width } = Dimensions.get('window');
@@ -162,17 +163,61 @@ const mealSuggestions = [
   },
 ];
 
+const getNutritionGoals = (trimester: number) => {
+  if (trimester === 1) return {
+    water: { current: 6, target: 8, unit: "glasses" },
+    calories: { current: 1800, target: 2000, unit: "kcal" },
+    protein: { current: 45, target: 60, unit: "g" },
+    iron: { current: 18, target: 27, unit: "mg" },
+    calcium: { current: 800, target: 1000, unit: "mg" },
+    folate: { current: 320, target: 400, unit: "mcg" },
+  };
+  if (trimester === 2) return {
+    water: { current: 6, target: 8, unit: "glasses" },
+    calories: { current: 2000, target: 2200, unit: "kcal" },
+    protein: { current: 55, target: 75, unit: "g" },
+    iron: { current: 21, target: 30, unit: "mg" },
+    calcium: { current: 900, target: 1200, unit: "mg" },
+    folate: { current: 400, target: 600, unit: "mcg" },
+  };
+  if (trimester === 3) return {
+    water: { current: 7, target: 9, unit: "glasses" },
+    calories: { current: 2200, target: 2400, unit: "kcal" },
+    protein: { current: 60, target: 80, unit: "g" },
+    iron: { current: 24, target: 35, unit: "mg" },
+    calcium: { current: 1000, target: 1300, unit: "mg" },
+    folate: { current: 500, target: 700, unit: "mcg" },
+  };
+  return dailyGoals;
+};
+
 const DietScreen = () => {
   const router = useRouter();
   const [selectedTab, setSelectedTab] = useState("overview");
+  const [pregnancyProfile, setPregnancyProfile] = useState(null);
 
-  const renderNutritionGoal = (key, goal) => {
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const token = await AsyncStorage.getItem("token");
+      const userId = await AsyncStorage.getItem("userId");
+      const response = await fetch(`http://10.232.66.19:5000/api/patients/profile/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      setPregnancyProfile(data);
+    };
+    fetchProfile();
+  }, []);
+
+  const goals = pregnancyProfile ? getNutritionGoals(pregnancyProfile.trimester) : dailyGoals;
+
+  const renderNutritionGoal = (key: React.Key | null | undefined, goal: { current: number; target: number; unit: string; } | { current: number; target: number; unit: string; } | { current: number; target: number; unit: string; } | { current: number; target: number; unit: string; } | { current: number; target: number; unit: string; } | { current: number; target: number; unit: string; }) => {
     const percentage = (goal.current / goal.target) * 100;
     
     return (
       <View key={key} style={styles.goalCard}>
         <View style={styles.goalHeader}>
-          <Text style={styles.goalTitle}>{key.charAt(0).toUpperCase() + key.slice(1)}</Text>
+          <Text style={styles.goalTitle}>{String(key).charAt(0).toUpperCase() + String(key).slice(1)}</Text>
           <Text style={styles.goalValue}>
             {goal.current}/{goal.target} {goal.unit}
           </Text>
@@ -190,7 +235,17 @@ const DietScreen = () => {
     );
   };
 
-  const renderRecommendedFood = ({ item }) => (
+  type RecommendedFood = {
+    id: string;
+    name: string;
+    category: string;
+    benefits: string;
+    image: any;
+    color: string;
+    localName: string;
+  };
+
+  const renderRecommendedFood = ({ item }: { item: RecommendedFood }) => (
     <TouchableOpacity style={styles.foodCard}>
       <LinearGradient
         colors={[`${item.color}15`, `${item.color}05`]}
@@ -327,10 +382,15 @@ const DietScreen = () => {
             <View style={styles.goalsSection}>
               <Text style={styles.sectionTitle}>Today's Nutrition Goals</Text>
               <View style={styles.goalsGrid}>
-                {Object.entries(dailyGoals).slice(1).map(([key, goal]) => 
+                {Object.entries(dailyGoals).slice(1).map(([key, goal]) =>
                   renderNutritionGoal(key, goal)
                 )}
               </View>
+              {pregnancyProfile && pregnancyProfile.health_conditions && (
+                <Text style={{ color: "#F44336", marginTop: 10 }}>
+                  Note: You have {pregnancyProfile.health_conditions.join(", ")}. Please follow your doctor's dietary advice.
+                </Text>
+              )}
             </View>
 
             {/* Quick Stats */}

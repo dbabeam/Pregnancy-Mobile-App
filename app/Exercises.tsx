@@ -3,15 +3,15 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-    Dimensions,
-    FlatList,
-    Image,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  FlatList,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 const { width } = Dimensions.get('window');
@@ -189,13 +189,13 @@ const ExercisesScreen = () => {
   const router = useRouter();
   const [selectedTab, setSelectedTab] = useState("overview");
 
-  const renderGoalCard = (key, goal) => {
+  const renderGoalCard = (key: React.Key | null | undefined, goal: { current: number; target: number; unit: string; } | { current: number; target: number; unit: string; } | { current: number; target: number; unit: string; } | { current: number; target: number; unit: string; }) => {
     const percentage = (goal.current / goal.target) * 100;
     
     return (
       <View key={key} style={styles.goalCard}>
         <View style={styles.goalHeader}>
-          <Text style={styles.goalTitle}>{key.charAt(0).toUpperCase() + key.slice(1)}</Text>
+          <Text style={styles.goalTitle}>{String(key).charAt(0).toUpperCase() + String(key).slice(1)}</Text>
           <Text style={styles.goalValue}>
             {goal.current}/{goal.target} {goal.unit}
           </Text>
@@ -213,7 +213,19 @@ const ExercisesScreen = () => {
     );
   };
 
-  const renderExerciseCategory = ({ item }) => (
+  type ExerciseCategory = {
+    id: string;
+    name: string;
+    description: string;
+    duration: string;
+    difficulty: string;
+    icon: string;
+    color: string;
+    image: any;
+    exercises: number;
+  };
+
+  const renderExerciseCategory = ({ item }: { item: ExerciseCategory }) => (
     <TouchableOpacity style={styles.categoryCard}>
       <LinearGradient
         colors={[`${item.color}15`, `${item.color}05`]}
@@ -245,7 +257,17 @@ const ExercisesScreen = () => {
     </TouchableOpacity>
   );
 
-  const renderTodayWorkout = ({ item }) => (
+  type TodayWorkout = {
+    id: string;
+    name: string;
+    time: string;
+    duration: string;
+    type: string;
+    completed: boolean;
+    color: string;
+  };
+
+  const renderTodayWorkout = ({ item }: { item: TodayWorkout }) => (
     <TouchableOpacity style={styles.workoutCard}>
       <LinearGradient
         colors={item.completed ? ["#E8F5E8", "#F1F8E9"] : ["#FFF", "#FAFAFA"]}
@@ -293,12 +315,12 @@ const ExercisesScreen = () => {
             >
               <Ionicons name="chevron-back" size={24} color="white" />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Exercise & Fitness</Text>
-            <TouchableOpacity style={styles.timerButton}>
-              <Ionicons name="timer" size={24} color="white" />
-            </TouchableOpacity>
+            <View style={{ flex: 1, alignItems: "center" }}>
+              <Text style={styles.headerTitle}>Exercise & Fitness</Text>
+            </View>
+            {/* Empty view to balance the back button */}
+            <View style={{ width: 32 }} />
           </View>
-          
           <View style={styles.headerSubtitle}>
             <Ionicons name="fitness" size={20} color="white" style={styles.headerIcon} />
             <Text style={styles.subtitleText}>
@@ -310,13 +332,15 @@ const ExercisesScreen = () => {
 
       {/* Tab Navigation */}
       <View style={styles.tabContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {["overview", "workouts", "safety", "achievements"].map((tab) => (
+        <View style={styles.tabRow}>
+          {["overview", "workouts"].map((tab) => (
             <TouchableOpacity
               key={tab}
               style={[
                 styles.tabButton,
-                selectedTab === tab && styles.tabButtonActive
+                selectedTab === tab && styles.tabButtonActive,
+                // Stretch tabs equally
+                { flex: 1 }
               ]}
               onPress={() => setSelectedTab(tab)}
             >
@@ -330,7 +354,7 @@ const ExercisesScreen = () => {
               </Text>
             </TouchableOpacity>
           ))}
-        </ScrollView>
+        </View>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -406,109 +430,8 @@ const ExercisesScreen = () => {
             />
           </View>
         )}
-
-        {selectedTab === "safety" && (
-          <View style={styles.safetySection}>
-            <Text style={styles.sectionTitle}>Exercise Safety Guidelines</Text>
-            <Text style={styles.sectionSubtitle}>
-              Important tips to keep you and your baby safe
-            </Text>
-            
-            {/* Safety Tips */}
-            <View style={styles.safetyTipsContainer}>
-              {safetyTips.map((tip) => (
-                <View key={tip.id} style={styles.safetyTipCard}>
-                  <View style={[styles.safetyIcon, { backgroundColor: `${tip.color}15` }]}>
-                    <Ionicons name={tip.icon} size={24} color={tip.color} />
-                  </View>
-                  <Text style={styles.safetyTipText}>{tip.tip}</Text>
-                </View>
-              ))}
-            </View>
-
-            {/* Warning Section */}
-            <View style={styles.warningSection}>
-              <LinearGradient
-                colors={["#FFEBEE", "#FFCDD2"]}
-                style={styles.warningGradient}
-              >
-                <Ionicons name="warning" size={24} color="#F44336" />
-                <Text style={styles.warningTitle}>When to Stop Exercising</Text>
-                <Text style={styles.warningText}>
-                  Stop exercising immediately and consult your doctor if you experience:
-                  {"\n"}• Vaginal bleeding or fluid leakage
-                  {"\n"}• Chest pain or heart palpitations
-                  {"\n"}• Severe headaches or dizziness
-                  {"\n"}• Muscle weakness or calf pain
-                  {"\n"}• Decreased fetal movement
-                </Text>
-              </LinearGradient>
-            </View>
-          </View>
-        )}
-
-        {selectedTab === "achievements" && (
-          <View style={styles.achievementsSection}>
-            <Text style={styles.sectionTitle}>Your Achievements</Text>
-            <Text style={styles.sectionSubtitle}>
-              Celebrate your fitness milestones
-            </Text>
-            
-            <View style={styles.achievementsGrid}>
-              {achievements.map((achievement) => (
-                <View key={achievement.id} style={styles.achievementCard}>
-                  <LinearGradient
-                    colors={achievement.unlocked ? 
-                      [`${achievement.color}15`, `${achievement.color}05`] : 
-                      ["#F5F5F5", "#EEEEEE"]
-                    }
-                    style={styles.achievementGradient}
-                  >
-                    <View style={[
-                      styles.achievementIcon, 
-                      { backgroundColor: achievement.unlocked ? achievement.color : "#BDBDBD" }
-                    ]}>
-                      <Ionicons 
-                        name={achievement.icon} 
-                        size={24} 
-                        color="white" 
-                      />
-                    </View>
-                    <Text style={[
-                      styles.achievementTitle,
-                      { color: achievement.unlocked ? "#2C3E50" : "#9E9E9E" }
-                    ]}>
-                      {achievement.title}
-                    </Text>
-                    <Text style={[
-                      styles.achievementDescription,
-                      { color: achievement.unlocked ? "#7F8C8D" : "#BDBDBD" }
-                    ]}>
-                      {achievement.description}
-                    </Text>
-                    {achievement.unlocked && (
-                      <View style={styles.unlockedBadge}>
-                        <Ionicons name="checkmark-circle" size={16} color="#4CAF50" />
-                        <Text style={styles.unlockedText}>Unlocked</Text>
-                      </View>
-                    )}
-                  </LinearGradient>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
       </ScrollView>
-
-      {/* Floating Action Button */}
-      <TouchableOpacity style={styles.fab}>
-        <LinearGradient
-          colors={["#9C27B0", "#7B1FA2"]}
-          style={styles.fabGradient}
-        >
-          <Ionicons name="play" size={24} color="white" />
-        </LinearGradient>
-      </TouchableOpacity>
+      {/* Removed Floating Action Button */}
     </View>
   );
 };
@@ -544,9 +467,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "white",
   },
-  timerButton: {
-    padding: 8,
-  },
   headerSubtitle: {
     flexDirection: "row",
     alignItems: "center",
@@ -564,12 +484,17 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#F0F0F0",
   },
+  tabRow: {
+    flexDirection: "row",
+    width: "100%",
+  },
   tabButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    marginHorizontal: 5,
+    paddingVertical: 10,
     borderRadius: 20,
     backgroundColor: "#F5F5F5",
+    marginHorizontal: 5,
+    alignItems: "center",
+    justifyContent: "center",
   },
   tabButtonActive: {
     backgroundColor: "#9C27B0",
@@ -796,136 +721,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  safetySection: {
-    marginBottom: 25,
-  },
-  safetyTipsContainer: {
-    marginBottom: 20,
-  },
-  safetyTipCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "white",
-    borderRadius: 15,
-    padding: 15,
-    marginBottom: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  safetyIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 15,
-  },
-  safetyTipText: {
-    flex: 1,
-    fontSize: 14,
-    color: "#2C3E50",
-    lineHeight: 20,
-  },
-  warningSection: {
-    borderRadius: 15,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  warningGradient: {
-    borderRadius: 15,
-    padding: 20,
-    alignItems: "center",
-  },
-  warningTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#F44336",
-    marginTop: 10,
-    marginBottom: 10,
-  },
-  warningText: {
-    fontSize: 14,
-    color: "#D32F2F",
-    textAlign: "center",
-    lineHeight: 20,
-  },
-  achievementsSection: {
-    marginBottom: 25,
-  },
-  achievementsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-  },
-  achievementCard: {
-    width: "48%",
-    borderRadius: 15,
-    marginBottom: 15,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  achievementGradient: {
-    borderRadius: 15,
-    padding: 15,
-    alignItems: "center",
-  },
-  achievementIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  achievementTitle: {
-    fontSize: 14,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 5,
-  },
-  achievementDescription: {
-    fontSize: 12,
-    textAlign: "center",
-    lineHeight: 16,
-    marginBottom: 10,
-  },
-  unlockedBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#E8F5E8",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  unlockedText: {
-    fontSize: 10,
-    color: "#4CAF50",
-    fontWeight: "600",
-    marginLeft: 4,
-  },
-  fab: {
-    position: "absolute",
-    bottom: 20,
-    right: 20,
-    shadowColor: "#9C27B0",
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 6,
-  },
-  fabGradient: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
     justifyContent: "center",
     alignItems: "center",
   },

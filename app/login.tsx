@@ -32,8 +32,8 @@ const handleLogin = async () => {
   }
 
   setLoading(true);
-  try {76
-    const response = await fetch("http://10.232.248.236:5000/api/patients/login", {
+  try {
+    const response = await fetch("http://10.232.66.19:5000/api/patients/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -43,7 +43,7 @@ const handleLogin = async () => {
 
     if (response.ok) {
       const userId = data.user?.id;
-      const profileCompleted = data.profileCompleted; // ✅ Fix: read directly from root
+      const profileCompleted = data.user?.profileCompleted; // ✅ FIXED: read from user object
       const token = data.token;
 
       if (!userId || !token) {
@@ -54,16 +54,18 @@ const handleLogin = async () => {
 
       await AsyncStorage.setItem("token", token);
       await AsyncStorage.setItem("userId", userId.toString());
-      await AsyncStorage.setItem("profileCompleted", (profileCompleted ?? false).toString());
+      await AsyncStorage.setItem(
+        "profileCompleted",
+        (profileCompleted === true || profileCompleted === "true") ? "true" : "false"
+      );
 
       Alert.alert("Success", "Login successful!");
 
-    if (profileCompleted === "true" || profileCompleted === true) {
-    router.replace("/Home");
-    } else {
-    router.replace("/setup");
-}
-
+      if (profileCompleted === "true" || profileCompleted === true) {
+        router.replace("/Home");
+      } else {
+        router.replace("/setup");
+      }
     } else {
       Alert.alert("Login Failed", data.error || "Invalid email or password");
     }

@@ -28,13 +28,14 @@ const LandingScreen = () => {
       const token = await AsyncStorage.getItem("token")
       const profileCompleted = await AsyncStorage.getItem("profileCompleted")
       const userId = await AsyncStorage.getItem("userId")
+      const isProfileCompleted = profileCompleted === "true"
 
       if (!token) {
         router.replace("/login")
         return
       }
 
-      const response = await fetch("http://10.132.115.187:5000/api/patients/verify", {
+      const response = await fetch("http://10.232.66.19:5000/api/patients/verify", {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -50,7 +51,7 @@ const LandingScreen = () => {
         return
       }
 
-      if (profileCompleted === "true") {
+      if (isProfileCompleted) {
         router.replace("/Home")
       } else {
         router.replace(`/setup?userId=${userId}`)

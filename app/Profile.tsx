@@ -1,5 +1,6 @@
 "use client"
 
+import AsyncStorage from "@react-native-async-storage/async-storage"
 import type React from "react"
 
 import { Ionicons } from "@expo/vector-icons"
@@ -38,18 +39,27 @@ interface Tip {
   color: string
 }
 
+// Helper to get initials
+function getInitials(name: string) {
+  if (!name) return "";
+  const parts = name.trim().split(" ");
+  if (parts.length === 1) return parts[0][0].toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
 const ProfileScreen = () => {
   const router = useRouter()
 
-  // User data - in real app, this would come from your backend/context
-  const [profile] = useState<UserProfile>({
-    name: "Elizabeth Larki",
-    email: "elizabeth@gmail.com",
-    phone: "123-456-7890",
-    dueDate: "12/15/2024",
-    pregnancyWeek: 24,
-  })
-
+  // User data from backend
+  const [profile, setProfile] = useState<{
+    fullName: string
+    email: string
+    dob: string
+    lastMenstrualPeriod: string
+    dueDate: string
+    profileImage?: string
+  } | null>(null)
+  const [pregnancyInfo, setPregnancyInfo] = useState<{ week: number; trimester: string; dueDate: string } | null>(null)
   const [tips] = useState<Tip[]>([
     {
       id: "1",
@@ -83,6 +93,46 @@ const ProfileScreen = () => {
   const bubbleAnim2 = useRef(new Animated.Value(0)).current
 
   useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = await AsyncStorage.getItem("token")
+        const userId = await AsyncStorage.getItem("userId")
+        if (!token || !userId) return
+
+        const response = await fetch(`http://10.232.66.19:5000/api/patients/profile/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (!response.ok) return
+        const data = await response.json()
+        setProfile({
+          fullName: `${data.first_name} ${data.last_name}`,
+          email: data.email,
+          dob: data.dob,
+          lastMenstrualPeriod: data.last_menstrual_period,
+          dueDate: data.due_date || "", // If your backend provides due_date
+          profileImage: data.profile_picture || undefined,
+        })
+
+        // Calculate pregnancy week, trimester, and due date
+        if (data.last_menstrual_period) {
+          const lmpDate = new Date(data.last_menstrual_period)
+          const today = new Date()
+          const days = Math.floor((today.getTime() - lmpDate.getTime()) / (1000 * 60 * 60 * 24))
+          const week = Math.floor(days / 7)
+          let trimester = "1st Trimester"
+          if (week > 27) trimester = "3rd Trimester"
+          else if (week > 12) trimester = "2nd Trimester"
+          // Calculate due date (LMP + 280 days)
+          const dueDateObj = new Date(lmpDate)
+          dueDateObj.setDate(lmpDate.getDate() + 280)
+          const dueDateStr = dueDateObj.toLocaleDateString()
+          setPregnancyInfo({ week, trimester, dueDate: dueDateStr })
+        }
+      } catch (e) {
+        // fail silently
+      }
+    }
+    fetchProfile()
     startAnimations()
   }, [])
 
@@ -146,14 +196,6 @@ const ProfileScreen = () => {
     createBubbleAnimation(bubbleAnim2, 2000).start()
   }
 
-  const calculateWeeksRemaining = () => {
-    return Math.max(0, 40 - profile.pregnancyWeek)
-  }
-
-  const getProgressPercentage = () => {
-    return (profile.pregnancyWeek / 40) * 100
-  }
-
   const renderAnimatedCard = (index: number, children: React.ReactNode, style?: any) => (
     <Animated.View
       style={[
@@ -187,47 +229,57 @@ const ProfileScreen = () => {
       ]}
     >
       <LinearGradient colors={["#FF6B9D", "#9C27B0"]} style={styles.profileGradient}>
-        {/* Profile Image */}
+        {/* Profile Image or Initials */}
         <View style={styles.profileImageContainer}>
           <View style={styles.profileImageWrapper}>
-            {profile.profileImage ? (
+            {profile?.profileImage ? (
               <Image source={{ uri: profile.profileImage }} style={styles.profileImage} />
             ) : (
               <View style={styles.profileImagePlaceholder}>
-                <Ionicons name="person" size={40} color="#9C27B0" />
+                <Text style={{ fontSize: 40, color: "#9C27B0", fontWeight: "bold" }}>
+                  {getInitials(profile?.fullName || "U")}
+                </Text>
               </View>
             )}
           </View>
-          <TouchableOpacity style={styles.editImageButton} activeOpacity={0.7}>
-            <Ionicons name="camera" size={16} color="white" />
-          </TouchableOpacity>
+          {/* Removed camera icon */}
         </View>
 
         {/* Profile Info */}
         <View style={styles.profileInfo}>
-          <Text style={styles.profileName}>{profile.name}</Text>
-          <Text style={styles.profileEmail}>{profile.email}</Text>
-          <Text style={styles.profilePhone}>{profile.phone}</Text>
+          <Text style={styles.profileName}>{profile?.fullName || "User"}</Text>
+          <Text style={styles.profileEmail}>{profile?.email || ""}</Text>
+          {pregnancyInfo && (
+            <Text style={[styles.profilePhone, { marginBottom: 0 }]}>
+              {pregnancyInfo.trimester}
+            </Text>
+          )}
 
           {/* Pregnancy Progress */}
-          <View style={styles.pregnancyProgress}>
-            <View style={styles.progressHeader}>
-              <Text style={styles.progressTitle}>Week {profile.pregnancyWeek}</Text>
-              <Text style={styles.progressSubtitle}>{calculateWeeksRemaining()} weeks to go</Text>
-            </View>
-            <View style={styles.progressBarContainer}>
-              <View style={styles.progressBar}>
-                <Animated.View style={[styles.progressFill, { width: `${getProgressPercentage()}%` }]} />
+          {pregnancyInfo && (
+            <View style={styles.pregnancyProgress}>
+              <View style={styles.progressHeader}>
+                <Text style={styles.progressTitle}>Week {pregnancyInfo.week}</Text>
+                <Text style={styles.progressSubtitle}>
+                  {40 - pregnancyInfo.week} weeks to go
+                </Text>
               </View>
-              <Text style={styles.progressPercentage}>{Math.round(getProgressPercentage())}%</Text>
+              <View style={styles.progressBarContainer}>
+                <View style={styles.progressBar}>
+                  <Animated.View style={[styles.progressFill, { width: `${(pregnancyInfo.week / 40) * 100}%` }]} />
+                </View>
+                <Text style={styles.progressPercentage}>{Math.round((pregnancyInfo.week / 40) * 100)}%</Text>
+              </View>
             </View>
-          </View>
+          )}
 
           {/* Due Date */}
-          <View style={styles.dueDateContainer}>
-            <Ionicons name="calendar" size={16} color="rgba(255, 255, 255, 0.8)" />
-            <Text style={styles.dueDateText}>Due: {profile.dueDate}</Text>
-          </View>
+          {pregnancyInfo && (
+            <View style={styles.dueDateContainer}>
+              <Ionicons name="calendar" size={16} color="rgba(255, 255, 255, 0.8)" />
+              <Text style={styles.dueDateText}>Due: {pregnancyInfo.dueDate}</Text>
+            </View>
+          )}
         </View>
 
         {/* Edit Button */}
@@ -361,9 +413,8 @@ const ProfileScreen = () => {
               <Ionicons name="chevron-back" size={24} color="white" />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>My Profile</Text>
-            <TouchableOpacity style={styles.menuButton} activeOpacity={0.7}>
-              <Ionicons name="ellipsis-vertical" size={24} color="white" />
-            </TouchableOpacity>
+            {/* Removed 3-dots/menu button */}
+            <View style={{ width: 40 }} />
           </View>
 
           <ScrollView

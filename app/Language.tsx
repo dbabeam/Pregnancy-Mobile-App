@@ -16,6 +16,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native"
+import i18n from "./i18"; // adjust path as needed
 
 const { width, height } = Dimensions.get("window")
 
@@ -136,7 +137,9 @@ export default function LanguageSettings() {
 
   const selectLanguage = (code: string) => {
     setSelectedLang(code)
-    // TODO: Add logic here to change app language based on 'code'
+    i18n.changeLanguage(code) // This will update the language everywhere
+    // Optionally, save to AsyncStorage for persistence
+    // AsyncStorage.setItem('appLanguage', code);
 
     // Animate selection feedback
     const selectedIndex = languages.findIndex((lang) => lang.code === code)

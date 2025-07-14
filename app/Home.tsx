@@ -1,12 +1,15 @@
 "use client"
 import ChatButton from "@/components/Chatbutton"
 import { Ionicons } from "@expo/vector-icons"
+import AsyncStorage from "@react-native-async-storage/async-storage"
+import { BlurView } from "expo-blur"
 import { LinearGradient } from "expo-linear-gradient"
 import { useRouter } from "expo-router"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import type { ColorValue } from "react-native"
 import { ActivityIndicator, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import ProfileHeader from "../components/ProfileHeader"
+
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FAFAFA" },
@@ -153,92 +156,139 @@ const babySizes: { [key: string]: string } = {
   40: "pumpkin 🎃",
 }
 
+type UserData = {
+  firstName: string
+  lastName: string
+  lastMenstrualPeriod: string
+  profilePicture: string | null
+} | null
+
+type PregnancyData = {
+  totalWeeks: number
+  extraDays: number
+  trimester: number
+  trimesterText: string
+  remainingWeeks: number
+  progressPercentage: number
+  babySize: string
+  isOverdue: boolean
+}
+
+type CardProps = {
+  title: string
+  subtitle: string
+  icon: string
+  colors: [ColorValue, ColorValue, ...ColorValue[]]
+  onPress: () => void
+}
+
+const Card = ({ title, subtitle, icon, colors, onPress }: CardProps) => (
+  <TouchableOpacity style={s.card} onPress={onPress}>
+    <LinearGradient colors={colors} style={s.cardContent}>
+      <View style={s.iconContainer}>
+        <Ionicons name={icon} size={28} color={typeof colors[0] === "string" ? colors[0].replace(/[^#]/g, "").slice(0, 7) : "#000"} />
+      </View>
+      <Text style={s.cardTitle}>{title}</Text>
+      <Text style={s.cardSubtitle}>{subtitle}</Text>
+    </LinearGradient>
+  </TouchableOpacity>
+)
+
+type FullWidthButtonProps = {
+  title: string
+  subtitle?: string
+  icon: string
+  colors: [ColorValue, ColorValue, ...ColorValue[]]
+  onPress: () => void
+  shadowColor?: ColorValue
+}
+
+const FullWidthButton = ({ title, subtitle, icon, colors, onPress, shadowColor }: FullWidthButtonProps) => (
+  <TouchableOpacity style={[s.fullWidth, { shadowColor }]} onPress={onPress}>
+    <LinearGradient colors={colors} style={s.fullWidthContent}>
+      <View style={s.emergencyContent}>
+        <Ionicons name={'warning'} size={24} color="white" />
+        <Text style={s.emergencyText}>{title}</Text>
+        {subtitle && <Ionicons name="call" size={20} color="white" />}
+      </View>
+    </LinearGradient>
+  </TouchableOpacity>
+)
+
+const calculatePregnancy = (lmp: string | number | Date): PregnancyData => {
+  const lmpDate = new Date(lmp)
+  const today = new Date()
+  const daysSinceLMP = Math.floor((today.getTime() - lmpDate.getTime()) / (1000 * 60 * 60 * 24))
+  const totalWeeks = Math.floor(daysSinceLMP / 7)
+  const extraDays = daysSinceLMP % 7
+
+  const trimester = totalWeeks <= 12 ? 1 : totalWeeks <= 27 ? 2 : 3
+  const trimesterText = `${trimester}${trimester === 1 ? "st" : trimester === 2 ? "nd" : "rd"} Trimester`
+
+  const dueDate = new Date(lmpDate)
+  dueDate.setDate(dueDate.getDate() + 280)
+  const remainingDays = Math.max(0, Math.floor((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)))
+  const remainingWeeks = Math.floor(remainingDays / 7)
+  const progressPercentage = Math.min(100, Math.round((totalWeeks / 40) * 100))
+
+  const babySize = babySizes[String(Math.floor(totalWeeks / 4) * 4)] || babySizes["40"] || "precious baby 👶🏾"
+
+  return {
+    totalWeeks,
+    extraDays,
+    trimester,
+    trimesterText,
+    remainingWeeks,
+    progressPercentage,
+    babySize,
+    isOverdue: totalWeeks > 40,
+  }
+}
+
 const HomeScreen = () => {
   const router = useRouter()
-  type UserData = {
-    firstName: string
-    lastName: string
-    lastMenstrualPeriod: string
-    profilePicture: string | null
-  }
-  const [userData, setUserData] = useState<UserData | null>(null)
-  type PregnancyData = {
-    totalWeeks: number
-    extraDays: number
-    trimester: number
-    trimesterText: string
-    remainingWeeks: number
-    progressPercentage: number
-    babySize: string
-    isOverdue: boolean
-  }
+  const [userData, setUserData] = useState<UserData>(null)
   const [pregnancyData, setPregnancyData] = useState<PregnancyData | null>(null)
   const [loading, setLoading] = useState(true)
 
-  interface CalculatePregnancyResult {
-    totalWeeks: number
-    extraDays: number
-    trimester: number
-    trimesterText: string
-    remainingWeeks: number
-    progressPercentage: number
-    babySize: string
-    isOverdue: boolean
-  }
-
-  const calculatePregnancy = (lmp: string): CalculatePregnancyResult => {
-    const lmpDate = new Date(lmp)
-    const today = new Date()
-    const daysSinceLMP = Math.floor((today.getTime() - lmpDate.getTime()) / (1000 * 60 * 60 * 24))
-    const totalWeeks = Math.floor(daysSinceLMP / 7)
-    const extraDays = daysSinceLMP % 7
-
-    const trimester = totalWeeks <= 12 ? 1 : totalWeeks <= 27 ? 2 : 3
-    const trimesterText = `${trimester}${trimester === 1 ? "st" : trimester === 2 ? "nd" : "rd"} Trimester`
-
-    const dueDate = new Date(lmpDate)
-    dueDate.setDate(dueDate.getDate() + 280)
-    const remainingDays = Math.max(0, Math.floor((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)))
-    const remainingWeeks = Math.floor(remainingDays / 7)
-    const progressPercentage = Math.min(100, Math.round((totalWeeks / 40) * 100))
-
-    const babySize = babySizes[String(Math.floor(totalWeeks / 4) * 4)] || babySizes["40"] || "precious baby 👶🏾"
-
-    return {
-      totalWeeks,
-      extraDays,
-      trimester,
-      trimesterText,
-      remainingWeeks,
-      progressPercentage,
-      babySize,
-      isOverdue: totalWeeks > 40,
-    }
-  }
-
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     try {
       setLoading(true)
-      const mockUserData = {
-        firstName: "Elizabeth",
-        lastName: "Larki",
-        lastMenstrualPeriod: "2024-01-15",
+      const token = await AsyncStorage.getItem("token")
+      const userId = await AsyncStorage.getItem("userId")
+      if (!token || !userId) throw new Error("User not authenticated")
+
+      const response = await fetch(`http://10.232.66.19:5000/api/patients/profile/${userId}`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (!response.ok) throw new Error("Failed to fetch user profile")
+
+      const data = await response.json()
+      const userProfile = {
+        firstName: data.first_name,
+        lastName: data.last_name,
+        lastMenstrualPeriod: data.last_menstrual_period,
         profilePicture: null,
       }
-      setUserData(mockUserData)
-      if (mockUserData.lastMenstrualPeriod) {
-        setPregnancyData(calculatePregnancy(mockUserData.lastMenstrualPeriod))
+      setUserData(userProfile)
+      if (userProfile.lastMenstrualPeriod) {
+        setPregnancyData(calculatePregnancy(userProfile.lastMenstrualPeriod))
       }
     } catch (error) {
       console.error("Error:", error)
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
     fetchUserData()
-  }, [])
+  }, [fetchUserData])
 
   if (loading) {
     return (
@@ -251,55 +301,6 @@ const HomeScreen = () => {
 
   const firstName = userData?.firstName || "Beautiful"
   const fullName = `${userData?.firstName || ""} ${userData?.lastName || ""}`.trim()
-  const userInitials = ((userData?.firstName?.[0] || "") + (userData?.lastName?.[0] || "")).slice(0, 2) || "U"
-
-  type CardProps = {
-    title: string
-    subtitle: string
-    icon: string
-    colors: readonly [ColorValue, ColorValue, ...ColorValue[]]
-    onPress: () => void
-  }
-
-  const Card = ({ title, subtitle, icon, colors, onPress }: CardProps) => (
-    <TouchableOpacity style={s.card} onPress={onPress}>
-      <LinearGradient colors={colors} style={s.cardContent}>
-        <View style={s.iconContainer}>
-          <Ionicons name={icon} size={28} color={typeof colors[0] === "string" ? colors[0] : "#9C27B0"} />
-        </View>
-        <Text style={s.cardTitle}>{title}</Text>
-        <Text style={s.cardSubtitle}>{subtitle}</Text>
-      </LinearGradient>
-    </TouchableOpacity>
-  )
-
-  type FullWidthButtonProps = {
-    title: string
-    subtitle?: string
-    icon: string
-    colors: readonly [ColorValue, ColorValue, ...ColorValue[]]
-    onPress: () => void
-    shadowColor: string
-  }
-
-  const FullWidthButton = ({
-    title,
-    subtitle,
-    icon,
-    colors,
-    onPress,
-    shadowColor,
-  }: FullWidthButtonProps) => (
-    <TouchableOpacity style={[s.fullWidth, { shadowColor }]} onPress={onPress}>
-      <LinearGradient colors={colors} style={s.fullWidthContent}>
-        <View style={s.emergencyContent}>
-          <Ionicons name={icon} size={24} color="white" />
-          <Text style={s.emergencyText}>{title}</Text>
-          {subtitle && <Ionicons name="call" size={20} color="white" />}
-        </View>
-      </LinearGradient>
-    </TouchableOpacity>
-  )
 
   return (
     <View style={s.container}>
@@ -324,7 +325,7 @@ const HomeScreen = () => {
             <Ionicons name="flower" size={16} color="white" />
             <Text style={s.trimesterText}>
               {pregnancyData
-                ? `${pregnancyData.trimesterText} • Week ${pregnancyData.totalWeeks}${pregnancyData.extraDays > 0 ? `+${pregnancyData.extraDays}` : ""}`
+                ? `${pregnancyData.trimesterText} • Week ${pregnancyData.totalWeeks}`
                 : "Your Journey"}
             </Text>
           </LinearGradient>
@@ -336,7 +337,8 @@ const HomeScreen = () => {
         contentContainerStyle={{ paddingBottom: 40, paddingTop: 10 }}
         showsVerticalScrollIndicator={false}
       >
-        <TouchableOpacity style={s.tracker} onPress={() => router.push("/Tracker")}>
+        {/* Tracker Card */}
+        <View style={s.tracker}>
           <LinearGradient colors={["#FFE4E6", "#FFF0F3"]} style={s.trackerContent}>
             <View style={s.trackerHeader}>
               <View>
@@ -370,72 +372,73 @@ const HomeScreen = () => {
                 : "Your baby is growing beautifully! 🌱"}
             </Text>
           </LinearGradient>
-        </TouchableOpacity>
-
-        <View style={s.sectionHeader}>
-          <Text style={s.sectionTitle}>Health & Wellness</Text>
-          <Ionicons name="medical" size={20} color="#C44569" />
-        </View>
-        <View style={s.grid}>
-          <Card
-            title="Symptom Check"
-            subtitle="Check your symptoms"
-            icon="medical-outline"
-            colors={["#FFE4E6", "#FFF0F3"]}
-            onPress={() => router.push("/Symptoms")}
-          />
-          <Card
-            title="Health Tips"
-            subtitle="Daily guidance"
-            icon="bulb-outline"
-            colors={["#FFF4E6", "#FFFAF0"]}
-            onPress={() => router.push("/Tips")}
-          />
         </View>
 
-        <View style={s.sectionHeader}>
-          <Text style={s.sectionTitle}>Lifestyle</Text>
-          <Ionicons name="leaf" size={20} color="#C44569" />
-        </View>
-        <View style={s.grid}>
-          <Card
-            title="Nutrition"
-            subtitle="Healthy eating"
-            icon="nutrition-outline"
-            colors={["#E8F5E8", "#F0FFF0"]}
-            onPress={() => router.push("/Diet")}
-          />
-          <Card
-            title="Exercise"
-            subtitle="Stay active"
-            icon="fitness-outline"
-            colors={["#E3F2FD", "#F0F8FF"]}
-            onPress={() => router.push("/Exercises")}
-          />
-        </View>
+        <Section
+          title="Health & Wellness"
+          icon="medical"
+          cards={[
+            {
+              title: "Symptom Check",
+              subtitle: "Check your symptoms",
+              icon: "medical-outline",
+              colors: ["#FFE4E6", "#FFF0F3"],
+              onPress: () => router.push("/Symptoms"),
+            },
+            {
+              title: "Health Tips",
+              subtitle: "Daily guidance",
+              icon: "bulb-outline",
+              colors: ["#FFF4E6", "#FFFAF0"],
+              onPress: () => router.push("/Tips"),
+            },
+          ]}
+        />
 
-        <View style={s.sectionHeader}>
-          <Text style={s.sectionTitle}>Community</Text>
-          <Ionicons name="people" size={20} color="#C44569" />
-        </View>
-        <View style={s.grid}>
-          <Card
-            title="AI Assistant"
-            subtitle="24/7 support"
-            icon="chatbubble-ellipses-outline"
-            colors={["#F3E5F5", "#FAF0FC"]}
-            onPress={() => router.push("/myAI")}
-          />
-          <Card
-            title="Messages"
-            subtitle="Connect with others"
-            icon="chatbubbles-outline"
-            colors={["#FFF3E0", "#FFFAF0"]}
-            onPress={() => router.push("/Messages")}
-          />
-        </View>
+        <Section
+          title="Lifestyle"
+          icon="leaf"
+          cards={[
+            {
+              title: "Nutrition",
+              subtitle: "Healthy eating",
+              icon: "nutrition-outline",
+              colors: ["#E8F5E8", "#F0FFF0"],
+              onPress: () => router.push("/Diet"),
+            },
+            {
+              title: "Exercise",
+              subtitle: "Stay active",
+              icon: "fitness-outline",
+              colors: ["#E3F2FD", "#F0F8FF"],
+              onPress: () => router.push("/Exercises"),
+            },
+          ]}
+        />
 
-        {pregnancyData && (pregnancyData.trimester === 3 || pregnancyData.isOverdue) && (
+        <Section
+          title="Community"
+          icon="people"
+          cards={[
+            {
+              title: "AI Assistant",
+              subtitle: "24/7 support",
+              icon: "chatbubble-ellipses-outline",
+              colors: ["#F3E5F5", "#FAF0FC"],
+              onPress: () => router.push("/myAI"),
+            },
+            {
+              title: "Messages",
+              subtitle: "Connect with others",
+              icon: "chatbubbles-outline",
+              colors: ["#FFF3E0", "#FFFAF0"],
+              onPress: () => router.push("/Messages"),
+            },
+          ]}
+        />
+
+        {/* Post Natal Care Section */}
+        {pregnancyData && pregnancyData.trimester === 3 && !pregnancyData.isOverdue ? (
           <FullWidthButton
             title="Post Natal Care"
             subtitle="Recovery & baby care support"
@@ -444,6 +447,44 @@ const HomeScreen = () => {
             shadowColor="#E91E63"
             onPress={() => router.push("/PostNatal")}
           />
+        ) : (
+          <View style={[s.fullWidth, { marginBottom: 20, overflow: "hidden", shadowColor: "#E91E63" }]}>
+            <View pointerEvents="none">
+              <FullWidthButton
+                title="Post Natal Care"
+                subtitle="Recovery & baby care support"
+                icon="heart"
+                colors={["#E91E63", "#D81B60"]}
+                shadowColor="#E91E63"
+                onPress={() => {}}
+              />
+            </View>
+            <BlurView
+              intensity={60}
+              tint="dark"
+              style={StyleSheet.absoluteFill}
+            >
+              <View style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+                borderRadius: 15,
+                backgroundColor: "rgba(0,0,0,0.35)",
+              }}>
+                <Text style={{
+                  color: "#fff",
+                  fontWeight: "bold",
+                  fontSize: 16,
+                  textAlign: "center",
+                  textShadowColor: "#000",
+                  textShadowRadius: 8,
+                }}>
+                  Post Natal Section
+                  Available in 3rd Trimester
+                </Text>
+              </View>
+            </BlurView>
+          </View>
         )}
         <ChatButton />
         <FullWidthButton
@@ -471,5 +512,28 @@ const HomeScreen = () => {
     </View>
   )
 }
+
+// Section component for repeated sections
+const Section = ({
+  title,
+  icon,
+  cards,
+}: {
+  title: string
+  icon: string
+  cards: CardProps[]
+}) => (
+  <>
+    <View style={s.sectionHeader}>
+      <Text style={s.sectionTitle}>{title}</Text>
+      <Ionicons name={icon as any} size={20} color="#C44569" />
+    </View>
+    <View style={s.grid}>
+      {cards.map((card, idx) => (
+        <Card key={card.title + idx} {...card} />
+      ))}
+    </View>
+  </>
+)
 
 export default HomeScreen
